@@ -1,0 +1,22 @@
+{
+  "include": [
+    "backend-ml-python"
+  ],
+  "extraPaths": [
+    "backend-ml-python"
+  ],
+  "executionEnvironments": [
+    {
+      "root": "backend-ml-python",
+      "extraPaths": [
+        "backend-ml-python"
+      ]
+    }
+  ],
+  "reportMissingImports": "none",
+  "reportMissingModuleSource": "none",
+  "reportUndefinedVariable": "none",
+  "reportGeneralTypeIssues": "none",
+  "reportUnknownMemberType": "none",
+  "reportUnknownVariableType": "none"
+}

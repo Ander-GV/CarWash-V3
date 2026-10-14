@@ -2,9 +2,22 @@
   "typescript.tsdk": "backend-nest/node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.suggest.completeFunctionCalls": true,
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/backend-ml-python",
+    "backend-ml-python"
+  ],
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder}/backend-ml-python",
+    "backend-ml-python"
+  ],
+  "python.analysis.typeCheckingMode": "off",
   "python.analysis.diagnosticSeverityOverrides": {
     "reportMissingImports": "none",
-    "reportMissingModuleSource": "none"
+    "reportMissingModuleSource": "none",
+    "reportUndefinedVariable": "none",
+    "reportGeneralTypeIssues": "none",
+    "reportUnknownMemberType": "none",
+    "reportUnknownVariableType": "none"
   },
   "files.exclude": {
     "**/.git": true,

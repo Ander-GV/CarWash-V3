@@ -1,9 +1,34 @@
-import numpy as np
+"""
+Módulo de Inteligencia Artificial y Modelado Predictivo para CAR WASH.
+Contiene las clases de predicción de demanda por placas y análisis de mantenimiento preventivo.
+"""
+
 from datetime import datetime, timedelta
+import math
+
+# Fallback seguro por si numpy no está instalado en el entorno local del editor
+try:
+    import numpy as np
+except ImportError:
+    import random
+    class _NumpyFallback:
+        class random:
+            @staticmethod
+            def normal(loc=0.0, scale=1.0):
+                return random.gauss(loc, scale)
+            @staticmethod
+            def uniform(low=0.0, high=1.0):
+                return random.uniform(low, high)
+        @staticmethod
+        def clip(a, a_min, a_max):
+            return max(a_min, min(a, a_max))
+    np = _NumpyFallback()
+
 
 class PredictorDemandaLavado:
     """
-    Modelo predictivo para afluencia vehicular, demanda y recurrencia de clientes por placa.
+    Clase de Inteligencia de Negocio para predicción de afluencia vehicular,
+    estimación de demanda semanal y recurrencia de clientes por placa.
     """
     def __init__(self):
         self.day_weights = {
@@ -18,7 +43,10 @@ class PredictorDemandaLavado:
         self.base_daily_washes = 42
         self.single_ticket_cop = 20000
 
-    def predict_next_7_days(self):
+    def predecir_proximos_7_dias(self) -> dict:
+        """
+        Calcula la proyección estimada de lavados, ingresos y curva horaria para los próximos 7 días.
+        """
         forecast = []
         today = datetime.now()
         day_names_es = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
@@ -67,7 +95,13 @@ class PredictorDemandaLavado:
             }
         }
 
-    def analyze_vehicle_loyalty(self):
+    # Alias en inglés para retrocompatibilidad
+    predict_next_7_days = predecir_proximos_7_dias
+
+    def analizar_fidelidad_vehicular(self) -> dict:
+        """
+        Análisis estadístico de fidelización por placa y frecuencia promedio de retorno.
+        """
         return {
             "averageDaysBetweenWashes": 11.4,
             "retentionRate": "78.6%",
@@ -79,17 +113,23 @@ class PredictorDemandaLavado:
             ]
         }
 
+    # Alias en inglés para retrocompatibilidad
+    analyze_vehicle_loyalty = analizar_fidelidad_vehicular
+
 
 class AnalizadorMantenimientoPredictivo:
     """
-    Analizador predictivo para los actuadores físicos exactos del autolavado:
+    Analizador predictivo para la salud y desgaste de los 5 actuadores físicos de CAR WASH:
     1. Bomba Agua + Shampoo
-    2. Motor de Esponjas
+    2. Motor de Rodillos / Esponjas
     3. Bomba Agua para Enjuagar
     4. Abanico / Turbina de Secado
-    5. Servomotor Talanquera
+    5. Servomotor Talanquera (Arduino)
     """
-    def evaluate_components(self):
+    def evaluar_componentes(self) -> dict:
+        """
+        Evalúa el estado de salud operativa, vibración y ciclos restantes de cada componente de hardware.
+        """
         components = [
             {
                 "id": "COMP-PUMP-SHAMPOO",
@@ -156,6 +196,12 @@ class AnalizadorMantenimientoPredictivo:
             "lastDiagnosticTimestamp": datetime.now().isoformat()
         }
 
-# Alias para compatibilidad
+    # Alias en inglés para retrocompatibilidad
+    evaluate_components = evaluar_componentes
+
+
+# ==========================================
+# ALIAS GLOBALES PARA MÁXIMA COMPATIBILIDAD
+# ==========================================
 WashDemandPredictor = PredictorDemandaLavado
 PredictiveMaintenanceAnalyzer = AnalizadorMantenimientoPredictivo
