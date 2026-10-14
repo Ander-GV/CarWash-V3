@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from predictor import WashDemandPredictor, PredictiveMaintenanceAnalyzer
+from predictor import PredictorDemandaLavado, AnalizadorMantenimientoPredictivo
 
 app = FastAPI(
-    title="CarWash V3 - Python Predictive Analytics & Vehicle Intelligence",
-    description="Microservicio de Inteligencia Artificial para análisis de demanda, retención de placas vehiculares y mantenimiento preventivo.",
+    title="CAR WASH - Microservicio de Analítica Predictiva e Inteligencia Vehicular",
+    description="Microservicio en Python para análisis de demanda, retención de placas vehiculares y mantenimiento preventivo.",
     version="1.0.0"
 )
 
@@ -16,42 +16,42 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-demand_predictor = WashDemandPredictor()
-maintenance_analyzer = PredictiveMaintenanceAnalyzer()
+predictor_demanda = PredictorDemandaLavado()
+analizador_mantenimiento = AnalizadorMantenimientoPredictivo()
 
 @app.get("/")
 def health_check():
     return {
-        "service": "CarWash ML Analytics",
+        "service": "CAR WASH ML Analytics",
         "status": "ONLINE",
         "version": "1.0.0"
     }
 
 @app.get("/predict/demand")
 def get_demand_prediction():
-    return demand_predictor.predict_next_7_days()
+    return predictor_demanda.predict_next_7_days()
 
 @app.get("/predict/loyalty")
 def get_loyalty_analytics():
-    return demand_predictor.analyze_vehicle_loyalty()
+    return predictor_demanda.analyze_vehicle_loyalty()
 
 @app.get("/predict/maintenance")
 def get_maintenance_prediction():
-    return maintenance_analyzer.evaluate_components()
+    return analizador_mantenimiento.evaluate_components()
 
 @app.get("/stats/overview")
 def get_stats_overview():
     return {
-        "modelName": "AutoWash Single-Type Model & Plate Recurrence Tracker",
+        "modelName": "CAR WASH Modelo de Recurrencia por Placa y Demanda",
         "meanAbsoluteError": 1.42,
         "r2Score": 0.946,
         "trainingSamples": 19200,
         "featuresUsed": [
-            "license_plate_frequency",
-            "hour_of_day",
-            "weather_factor",
-            "fan_drying_cycles",
-            "sponges_motor_wear"
+            "frecuencia_placa_vehiculo",
+            "hora_del_dia",
+            "factor_clima",
+            "ciclos_turbina_abanico",
+            "desgaste_motor_esponjas"
         ]
     }
 

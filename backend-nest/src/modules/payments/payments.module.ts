@@ -1,12 +1,15 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { WompiService } from './wompi.service';
-import { PaymentsController } from './payments.controller';
-import { WashModule } from '../wash/wash.module';
+import { ServicioWompi } from './wompi.service';
+import { ControladorPagos } from './payments.controller';
+import { ModuloLavado } from '../wash/wash.module';
 
 @Module({
-  imports: [forwardRef(() => WashModule)],
-  controllers: [PaymentsController],
-  providers: [WompiService],
-  exports: [WompiService],
+  imports: [forwardRef(() => ModuloLavado)],
+  controllers: [ControladorPagos],
+  providers: [ServicioWompi],
+  exports: [ServicioWompi],
 })
-export class PaymentsModule {}
+export class ModuloPagos {}
+
+// Alias para compatibilidad
+export const PaymentsModule = ModuloPagos;

@@ -4,14 +4,14 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import { User } from './entities/user.entity';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { JwtStrategy } from './strategies/jwt.strategy';
+import { Usuario } from './entities/user.entity';
+import { ServicioAutenticacion } from './auth.service';
+import { ControladorAutenticacion } from './auth.controller';
+import { EstrategiaJwt } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([Usuario]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -24,8 +24,11 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       }),
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService, JwtStrategy, PassportModule],
+  controllers: [ControladorAutenticacion],
+  providers: [ServicioAutenticacion, EstrategiaJwt],
+  exports: [ServicioAutenticacion, EstrategiaJwt, PassportModule],
 })
-export class AuthModule {}
+export class ModuloAutenticacion {}
+
+// Alias para compatibilidad
+export const AuthModule = ModuloAutenticacion;

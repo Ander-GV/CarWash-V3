@@ -9,7 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
-import { WashStage } from '../../common/enums/wash-stage.enum';
+import { FaseLavado } from '../../common/enums/wash-stage.enum';
 
 @WebSocketGateway({
   cors: {
@@ -17,11 +17,11 @@ import { WashStage } from '../../common/enums/wash-stage.enum';
   },
   namespace: '/wash-stream',
 })
-export class WashGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class GatewayLavado implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  private readonly logger = new Logger(WashGateway.name);
+  private readonly logger = new Logger(GatewayLavado.name);
 
   handleConnection(client: Socket) {
     this.logger.log(`Cliente WebSocket conectado: ${client.id}`);
@@ -49,10 +49,7 @@ export class WashGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return { status: 'ADMIN_SUBSCRIBED' };
   }
 
-  /**
-   * Notificar al cliente y al panel de administración sobre el cambio de fase
-   */
-  broadcastStageChange(sessionId: string, stage: WashStage, metadata?: any) {
+  broadcastStageChange(sessionId: string, stage: FaseLavado, metadata?: any) {
     const payload = {
       sessionId,
       stage,
@@ -60,16 +57,10 @@ export class WashGateway implements OnGatewayConnection, OnGatewayDisconnect {
       metadata,
     };
 
-    // Emitir a la sala del cliente específico (kiosco/móvil)
     this.server.to(`session_${sessionId}`).emit('stage_updated', payload);
-
-    // Emitir también al panel de administración en vivo
     this.server.to('admin_live_room').emit('admin_session_stage_updated', payload);
   }
 
-  /**
-   * Notificar apertura de talanquera / barrera
-   */
   broadcastBarrierOpened(sessionId: string) {
     const payload = {
       sessionId,
@@ -80,3 +71,6 @@ export class WashGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to('admin_live_room').emit('barrier_status', payload);
   }
 }
+
+// Alias para compatibilidad
+export const WashGateway = GatewayLavado;

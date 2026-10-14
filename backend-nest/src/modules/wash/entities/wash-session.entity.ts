@@ -5,10 +5,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { WashPlan, WashStage } from '../../../common/enums/wash-stage.enum';
+import { PlanLavado, FaseLavado } from '../../../common/enums/wash-stage.enum';
 
 @Entity('wash_sessions')
-export class WashSession {
+export class SesionLavado {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -20,20 +20,20 @@ export class WashSession {
 
   @Column({
     type: 'enum',
-    enum: WashPlan,
-    default: WashPlan.FULL_WASH,
+    enum: PlanLavado,
+    default: PlanLavado.FULL_WASH,
   })
-  plan: WashPlan;
+  plan: PlanLavado;
 
   @Column({ type: 'numeric', precision: 10, scale: 2, default: 20000 })
   amount: number;
 
   @Column({
     type: 'enum',
-    enum: WashStage,
-    default: WashStage.PENDING_PAYMENT,
+    enum: FaseLavado,
+    default: FaseLavado.PENDING_PAYMENT,
   })
-  stage: WashStage;
+  stage: FaseLavado;
 
   @Column({ length: 20, default: 'PENDING' })
   paymentStatus: 'PENDING' | 'APPROVED' | 'DECLINED' | 'VOIDED';
@@ -69,3 +69,6 @@ export class WashSession {
   @UpdateDateColumn()
   updatedAt: Date;
 }
+
+// Alias para compatibilidad
+export const WashSession = SesionLavado;

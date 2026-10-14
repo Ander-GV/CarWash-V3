@@ -3,38 +3,37 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import { User } from './entities/user.entity';
-import { LoginDto, RegisterDto } from './dto/auth.dto';
-import { Role } from '../../common/enums/role.enum';
+import { Usuario } from './entities/user.entity';
+import { DtoIniciarSesion, DtoRegistro } from './dto/auth.dto';
+import { Rol } from '../../common/enums/role.enum';
 
 @Injectable()
-export class AuthService {
+export class ServicioAutenticacion {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-    private jwtService: JwtService,
+    @InjectRepository(Usuario)
+    private readonly repositorioUsuario: Repository<Usuario>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async onModuleInit() {
-    // Semilla automática del usuario Administrador por defecto
-    const adminExists = await this.userRepository.findOne({
+    const adminExists = await this.repositorioUsuario.findOne({
       where: { email: 'admin@carwash.com' },
     });
     if (!adminExists) {
       const hashedPassword = await bcrypt.hash('AdminCarWash2026!', 10);
-      const admin = this.userRepository.create({
+      const admin = this.repositorioUsuario.create({
         email: 'admin@carwash.com',
         fullName: 'Administrador Maestro',
         password: hashedPassword,
-        role: Role.ADMIN,
+        role: Rol.ADMIN,
       });
-      await this.userRepository.save(admin);
-      console.log(' [AuthService] Usuario Administrador inicial creado: admin@carwash.com / AdminCarWash2026!');
+      await this.repositorioUsuario.save(admin);
+      console.log(' [ServicioAutenticacion] Usuario Administrador creado: admin@carwash.com / AdminCarWash2026!');
     }
   }
 
-  async register(registerDto: RegisterDto) {
-    const existing = await this.userRepository.findOne({
+  async register(registerDto: DtoRegistro) {
+    const existing = await this.repositorioUsuario.findOne({
       where: { email: registerDto.email },
     });
     if (existing) {
@@ -42,14 +41,13 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    const user = this.userRepository.create({
+    const user = this.repositorioUsuario.create({
       ...registerDto,
       password: hashedPassword,
-      role: registerDto.role || Role.CLIENT,
+      role: registerDto.role || Rol.CLIENT,
     });
 
-    const savedUser = await this.userRepository.save(user);
-
+    const savedUser = await this.repositorioUsuario.save(user);
     const token = this.generateToken(savedUser);
     return {
       user: {
@@ -62,8 +60,8 @@ export class AuthService {
     };
   }
 
-  async login(loginDto: LoginDto) {
-    const user = await this.userRepository
+  async login(loginDto: DtoIniciarSesion) {
+    const user = await this.repositorioUsuario
       .createQueryBuilder('user')
       .addSelect('user.password')
       .where('user.email = :email', { email: loginDto.email })
@@ -90,7 +88,7 @@ export class AuthService {
     };
   }
 
-  private generateToken(user: User): string {
+  private generateToken(user: Usuario): string {
     const payload = {
       sub: user.id,
       email: user.email,
@@ -99,3 +97,6 @@ export class AuthService {
     return this.jwtService.sign(payload);
   }
 }
+
+// Alias para compatibilidad
+export const AuthService = ServicioAutenticacion;

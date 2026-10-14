@@ -3,13 +3,13 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../entities/user.entity';
+import { Usuario } from '../entities/user.entity';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class EstrategiaJwt extends PassportStrategy(Strategy) {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    @InjectRepository(Usuario)
+    private repositorioUsuario: Repository<Usuario>,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -19,7 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: { sub: string; email: string; role: string }) {
-    const user = await this.userRepository.findOne({ where: { id: payload.sub } });
+    const user = await this.repositorioUsuario.findOne({ where: { id: payload.sub } });
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Token inválido o usuario inactivo');
     }
@@ -31,3 +31,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     };
   }
 }
+
+// Alias para compatibilidad
+export const JwtStrategy = EstrategiaJwt;

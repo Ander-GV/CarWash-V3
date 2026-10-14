@@ -1,4 +1,4 @@
-export enum WashStage {
+export enum FaseLavado {
   PENDING_PAYMENT = 'PENDING_PAYMENT',
   PAYMENT_CONFIRMED = 'PAYMENT_CONFIRMED',
   BARRIER_OPENED = 'BARRIER_OPENED',
@@ -11,9 +11,16 @@ export enum WashStage {
   CANCELLED = 'CANCELLED',
 }
 
-export enum WashPlan {
-  FULL_WASH = 'LAVADO_COMPLETO', // Único lavado unificado
+export enum PlanLavado {
+  FULL_WASH = 'LAVADO_COMPLETO',
 }
 
-export const SINGLE_WASH_PRICE_COP = 20000; // Precio único sugerido ($20.000 COP)
-export const WASHES_FOR_FREE_REWARD = 5;     // Cada 5 lavados, el 6to es GRATIS
+// Exportar tanto tipo como valor para compatibilidad
+export type WashStage = FaseLavado;
+export const WashStage = FaseLavado;
+
+export type WashPlan = PlanLavado;
+export const WashPlan = PlanLavado;
+
+export const SINGLE_WASH_PRICE_COP = 20000;
+export const WASHES_FOR_FREE_REWARD = 5;

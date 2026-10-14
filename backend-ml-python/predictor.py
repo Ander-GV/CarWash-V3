@@ -1,7 +1,7 @@
 import numpy as np
 from datetime import datetime, timedelta
 
-class WashDemandPredictor:
+class PredictorDemandaLavado:
     """
     Modelo predictivo para afluencia vehicular, demanda y recurrencia de clientes por placa.
     """
@@ -68,9 +68,6 @@ class WashDemandPredictor:
         }
 
     def analyze_vehicle_loyalty(self):
-        """
-        Análisis predictivo de retención de placas y probabilidad de retorno
-        """
         return {
             "averageDaysBetweenWashes": 11.4,
             "retentionRate": "78.6%",
@@ -83,7 +80,7 @@ class WashDemandPredictor:
         }
 
 
-class PredictiveMaintenanceAnalyzer:
+class AnalizadorMantenimientoPredictivo:
     """
     Analizador predictivo para los actuadores físicos exactos del autolavado:
     1. Bomba Agua + Shampoo
@@ -158,3 +155,7 @@ class PredictiveMaintenanceAnalyzer:
             "preventiveAlertsCount": 1,
             "lastDiagnosticTimestamp": datetime.now().isoformat()
         }
+
+# Alias para compatibilidad
+WashDemandPredictor = PredictorDemandaLavado
+PredictiveMaintenanceAnalyzer = AnalizadorMantenimientoPredictivo

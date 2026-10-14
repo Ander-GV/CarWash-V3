@@ -1,37 +1,31 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { AnalyticsService } from './analytics.service';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
+import { ServicioAnalitica } from './analytics.service';
+import { GuardAutenticacionJwt } from '../../common/guards/jwt-auth.guard';
+import { GuardRoles } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { Role } from '../../common/enums/role.enum';
+import { Rol } from '../../common/enums/role.enum';
 
 @Controller('admin/analytics')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.ADMIN)
-export class AnalyticsAdminController {
-  constructor(private readonly analyticsService: AnalyticsService) {}
+@UseGuards(GuardAutenticacionJwt, GuardRoles)
+@Roles(Rol.ADMIN)
+export class ControladorAdminAnalitica {
+  constructor(private readonly servicioAnalitica: ServicioAnalitica) {}
 
-  /**
-   * Predicción de demanda y afluencia vehicular (IA Python)
-   */
   @Get('predictions')
   async getPredictions() {
-    return this.analyticsService.getDemandPredictions();
+    return this.servicioAnalitica.getDemandPredictions();
   }
 
-  /**
-   * Mantenimiento predictivo de hardware y bombas
-   */
   @Get('maintenance')
   async getMaintenance() {
-    return this.analyticsService.getPredictiveMaintenance();
+    return this.servicioAnalitica.getPredictiveMaintenance();
   }
 
-  /**
-   * Métricas globales del modelo de Machine Learning
-   */
   @Get('overview')
   async getOverview() {
-    return this.analyticsService.getAnalyticsOverview();
+    return this.servicioAnalitica.getAnalyticsOverview();
   }
 }
+
+// Alias para compatibilidad
+export const AnalyticsAdminController = ControladorAdminAnalitica;

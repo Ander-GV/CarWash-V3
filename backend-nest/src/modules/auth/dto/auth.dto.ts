@@ -1,7 +1,7 @@
 import { IsEmail, IsNotEmpty, IsString, MinLength, IsEnum, IsOptional } from 'class-validator';
-import { Role } from '../../../common/enums/role.enum';
+import { Rol } from '../../../common/enums/role.enum';
 
-export class LoginDto {
+export class DtoIniciarSesion {
   @IsEmail({}, { message: 'El correo electrónico no tiene un formato válido' })
   @IsNotEmpty({ message: 'El correo electrónico es obligatorio' })
   email: string;
@@ -12,7 +12,7 @@ export class LoginDto {
   password: string;
 }
 
-export class RegisterDto {
+export class DtoRegistro {
   @IsEmail({}, { message: 'El correo electrónico no tiene un formato válido' })
   @IsNotEmpty({ message: 'El correo es requerido' })
   email: string;
@@ -25,7 +25,11 @@ export class RegisterDto {
   @IsNotEmpty({ message: 'El nombre completo es requerido' })
   fullName: string;
 
-  @IsEnum(Role, { message: 'El rol debe ser ROLE_CLIENT, ROLE_OPERATOR o ROLE_ADMIN' })
+  @IsEnum(Rol, { message: 'El rol debe ser ROLE_CLIENT, ROLE_OPERATOR o ROLE_ADMIN' })
   @IsOptional()
-  role?: Role;
+  role?: Rol;
 }
+
+// Alias para compatibilidad
+export const LoginDto = DtoIniciarSesion;
+export const RegisterDto = DtoRegistro;

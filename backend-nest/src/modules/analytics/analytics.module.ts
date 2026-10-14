@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
-import { AnalyticsService } from './analytics.service';
-import { AnalyticsAdminController } from './analytics-admin.controller';
+import { ServicioAnalitica } from './analytics.service';
+import { ControladorAdminAnalitica } from './analytics-admin.controller';
 
 @Module({
-  controllers: [AnalyticsAdminController],
-  providers: [AnalyticsService],
-  exports: [AnalyticsService],
+  controllers: [ControladorAdminAnalitica],
+  providers: [ServicioAnalitica],
+  exports: [ServicioAnalitica],
 })
-export class AnalyticsModule {}
+export class ModuloAnalitica {}
+
+// Alias para compatibilidad
+export const AnalyticsModule = ModuloAnalitica;

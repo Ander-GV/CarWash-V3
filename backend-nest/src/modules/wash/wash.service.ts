@@ -1,32 +1,29 @@
 import { Injectable, NotFoundException, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
-import { WashSession } from './entities/wash-session.entity';
-import { CreateWashDto } from './dto/wash.dto';
-import { WashPlan, WashStage, SINGLE_WASH_PRICE_COP, WASHES_FOR_FREE_REWARD } from '../../common/enums/wash-stage.enum';
-import { ArduinoService, ArduinoEvent } from '../hardware/arduino.service';
-import { WashGateway } from './wash.gateway';
+import { SesionLavado } from './entities/wash-session.entity';
+import { DtoCrearLavado } from './dto/wash.dto';
+import { PlanLavado, FaseLavado, SINGLE_WASH_PRICE_COP, WASHES_FOR_FREE_REWARD } from '../../common/enums/wash-stage.enum';
+import { ServicioArduino, EventoArduino } from '../hardware/arduino.service';
+import { GatewayLavado } from './wash.gateway';
 
 @Injectable()
-export class WashService implements OnModuleInit {
-  private readonly logger = new Logger(WashService.name);
+export class ServicioLavado implements OnModuleInit {
+  private readonly logger = new Logger(ServicioLavado.name);
 
   constructor(
-    @InjectRepository(WashSession)
-    private readonly washRepo: Repository<WashSession>,
-    private readonly arduinoService: ArduinoService,
-    private readonly washGateway: WashGateway,
+    @InjectRepository(SesionLavado)
+    private readonly washRepo: Repository<SesionLavado>,
+    private readonly servicioArduino: ServicioArduino,
+    private readonly gatewayLavado: GatewayLavado,
   ) {}
 
   onModuleInit() {
-    this.arduinoService.eventStream$.subscribe((event: ArduinoEvent) => {
+    this.servicioArduino.eventStream$.subscribe((event: EventoArduino) => {
       this.handleArduinoEvent(event);
     });
   }
 
-  /**
-   * Consultar estatus de fidelización y puntos por placa vehicular
-   */
   async getPlateLoyaltyInfo(rawPlate: string) {
     const licensePlate = rawPlate.toUpperCase().trim();
     const approvedWashes = await this.washRepo.count({
@@ -37,7 +34,6 @@ export class WashService implements OnModuleInit {
     });
 
     const nextWashNumber = approvedWashes + 1;
-    // Cada 6to lavado es gratis (5 lavados acumulados previos)
     const isNextWashFree = (approvedWashes > 0 && approvedWashes % WASHES_FOR_FREE_REWARD === 0);
     const washesUntilNextFree = isNextWashFree ? 0 : (WASHES_FOR_FREE_REWARD - (approvedWashes % WASHES_FOR_FREE_REWARD));
 
@@ -58,14 +54,10 @@ export class WashService implements OnModuleInit {
     };
   }
 
-  /**
-   * Crear nueva sesión de lavado único con acumulación de puntos
-   */
-  async createSession(dto: CreateWashDto): Promise<WashSession> {
+  async createSession(dto: DtoCrearLavado): Promise<SesionLavado> {
     const cleanPlate = dto.licensePlate.toUpperCase().trim();
     const loyalty = await this.getPlateLoyaltyInfo(cleanPlate);
 
-    // Si le corresponde el lavado gratis por fidelidad, el monto es 0 COP
     let amount = SINGLE_WASH_PRICE_COP;
     let isFreeReward = false;
 
@@ -80,9 +72,9 @@ export class WashService implements OnModuleInit {
     const session = this.washRepo.create({
       licensePlate: cleanPlate,
       clientPhone: dto.clientPhone,
-      plan: WashPlan.FULL_WASH,
+      plan: PlanLavado.FULL_WASH,
       amount,
-      stage: isFreeReward ? WashStage.PAYMENT_CONFIRMED : WashStage.PENDING_PAYMENT,
+      stage: isFreeReward ? FaseLavado.PAYMENT_CONFIRMED : FaseLavado.PENDING_PAYMENT,
       paymentStatus: isFreeReward ? 'APPROVED' : 'PENDING',
       paymentReference,
       pointsEarned: 100,
@@ -94,14 +86,13 @@ export class WashService implements OnModuleInit {
     const saved = await this.washRepo.save(session);
     this.logger.log(`Nueva orden de lavado creada: ${saved.id} (Placa: ${cleanPlate}, Monto: ${amount} COP)`);
 
-    // Si fue gratis por fidelidad, disparar directamente al Arduino sin requerir pago
     if (isFreeReward) {
       setTimeout(async () => {
-        this.washGateway.broadcastStageChange(saved.id, WashStage.PAYMENT_CONFIRMED);
-        await this.arduinoService.openBarrier(saved.id);
-        this.washGateway.broadcastBarrierOpened(saved.id);
+        this.gatewayLavado.broadcastStageChange(saved.id, FaseLavado.PAYMENT_CONFIRMED);
+        await this.servicioArduino.openBarrier(saved.id);
+        this.gatewayLavado.broadcastBarrierOpened(saved.id);
         setTimeout(async () => {
-          await this.arduinoService.startWashSequence(saved.id, WashPlan.FULL_WASH);
+          await this.servicioArduino.startWashSequence(saved.id, PlanLavado.FULL_WASH);
         }, 2000);
       }, 500);
     }
@@ -109,7 +100,7 @@ export class WashService implements OnModuleInit {
     return saved;
   }
 
-  async getSessionById(id: string): Promise<WashSession> {
+  async getSessionById(id: string): Promise<SesionLavado> {
     const session = await this.washRepo.findOne({ where: { id } });
     if (!session) {
       throw new NotFoundException(`Sesión ${id} no encontrada`);
@@ -117,7 +108,7 @@ export class WashService implements OnModuleInit {
     return session;
   }
 
-  async getSessionByReference(reference: string): Promise<WashSession> {
+  async getSessionByReference(reference: string): Promise<SesionLavado> {
     const session = await this.washRepo.findOne({ where: { paymentReference: reference } });
     if (!session) {
       throw new NotFoundException(`Sesión con referencia ${reference} no encontrada`);
@@ -125,32 +116,28 @@ export class WashService implements OnModuleInit {
     return session;
   }
 
-  /**
-   * Procesar aprobación de pago Wompi
-   */
-  async handlePaymentApproved(sessionId: string, transactionId: string): Promise<WashSession> {
+  async handlePaymentApproved(sessionId: string, transactionId: string): Promise<SesionLavado> {
     const session = await this.getSessionById(sessionId);
     session.paymentStatus = 'APPROVED';
     session.wompiTransactionId = transactionId;
-    session.stage = WashStage.PAYMENT_CONFIRMED;
+    session.stage = FaseLavado.PAYMENT_CONFIRMED;
     session.entryTime = new Date();
 
     const updated = await this.washRepo.save(session);
     this.logger.log(` Pago Wompi Aprobado para ${session.licensePlate}. Abriendo talanquera con Arduino.`);
 
-    this.washGateway.broadcastStageChange(session.id, WashStage.PAYMENT_CONFIRMED);
-    await this.arduinoService.openBarrier(session.id);
-    this.washGateway.broadcastBarrierOpened(session.id);
+    this.gatewayLavado.broadcastStageChange(session.id, FaseLavado.PAYMENT_CONFIRMED);
+    await this.servicioArduino.openBarrier(session.id);
+    this.gatewayLavado.broadcastBarrierOpened(session.id);
 
-    // Iniciar el ciclo de lavado en Arduino
     setTimeout(async () => {
-      await this.arduinoService.startWashSequence(session.id, session.plan);
+      await this.servicioArduino.startWashSequence(session.id, session.plan);
     }, 2000);
 
     return updated;
   }
 
-  private async handleArduinoEvent(event: ArduinoEvent) {
+  private async handleArduinoEvent(event: EventoArduino) {
     if (!event.sessionId) return;
 
     try {
@@ -158,22 +145,22 @@ export class WashService implements OnModuleInit {
       if (!session) return;
 
       if (event.type === 'BARRIER_OPENED') {
-        session.stage = WashStage.BARRIER_OPENED;
+        session.stage = FaseLavado.BARRIER_OPENED;
         await this.washRepo.save(session);
-        this.washGateway.broadcastStageChange(session.id, WashStage.BARRIER_OPENED);
+        this.gatewayLavado.broadcastStageChange(session.id, FaseLavado.BARRIER_OPENED);
       } else if (event.type === 'CAR_DETECTED') {
-        session.stage = WashStage.VEHICLE_POSITIONED;
+        session.stage = FaseLavado.VEHICLE_POSITIONED;
         await this.washRepo.save(session);
-        this.washGateway.broadcastStageChange(session.id, WashStage.VEHICLE_POSITIONED);
+        this.gatewayLavado.broadcastStageChange(session.id, FaseLavado.VEHICLE_POSITIONED);
       } else if (event.type === 'STAGE_CHANGE' && event.stage) {
-        session.stage = event.stage as WashStage;
+        session.stage = event.stage as FaseLavado;
         await this.washRepo.save(session);
-        this.washGateway.broadcastStageChange(session.id, session.stage);
+        this.gatewayLavado.broadcastStageChange(session.id, session.stage);
       } else if (event.type === 'FINISHED') {
-        session.stage = WashStage.STAGE_FINISHED;
+        session.stage = FaseLavado.STAGE_FINISHED;
         session.finishTime = new Date();
         await this.washRepo.save(session);
-        this.washGateway.broadcastStageChange(session.id, WashStage.STAGE_FINISHED);
+        this.gatewayLavado.broadcastStageChange(session.id, FaseLavado.STAGE_FINISHED);
       }
     } catch (err: any) {
       this.logger.error(`Error evento Arduino: ${err.message}`);
@@ -212,17 +199,16 @@ export class WashService implements OnModuleInit {
     const totalTodayRevenue = todayWashes.reduce((acc, w) => acc + Number(w.amount), 0);
     const activeWashes = await this.washRepo.count({
       where: [
-        { stage: WashStage.STAGE_SHAMPOO },
-        { stage: WashStage.STAGE_SPONGES },
-        { stage: WashStage.STAGE_RINSE },
-        { stage: WashStage.STAGE_FAN_DRYING },
-        { stage: WashStage.BARRIER_OPENED },
+        { stage: FaseLavado.STAGE_SHAMPOO },
+        { stage: FaseLavado.STAGE_SPONGES },
+        { stage: FaseLavado.STAGE_RINSE },
+        { stage: FaseLavado.STAGE_FAN_DRYING },
+        { stage: FaseLavado.BARRIER_OPENED },
       ],
     });
 
     const totalAllTime = await this.washRepo.count();
 
-    // Análisis de fidelización y recurrencia de vehículos para el Admin
     const uniquePlatesRaw = await this.washRepo
       .createQueryBuilder('wash')
       .select('wash.licensePlate', 'plate')
@@ -245,18 +231,21 @@ export class WashService implements OnModuleInit {
         recurringVehiclesCount,
         topFrequentPlates: uniquePlatesRaw,
       },
-      arduino: this.arduinoService.getStatus(),
+      arduino: this.servicioArduino.getStatus(),
     };
   }
 
   async adminManualOpenBarrier(sessionId: string) {
-    await this.arduinoService.openBarrier(sessionId);
-    this.washGateway.broadcastBarrierOpened(sessionId);
+    await this.servicioArduino.openBarrier(sessionId);
+    this.gatewayLavado.broadcastBarrierOpened(sessionId);
     return { success: true, message: 'Talanquera abierta manualmente' };
   }
 
   async adminEmergencyStop() {
-    await this.arduinoService.emergencyStop();
+    await this.servicioArduino.emergencyStop();
     return { success: true, message: 'Parada de emergencia ejecutada en Arduino' };
   }
 }
+
+// Alias para compatibilidad
+export const WashService = ServicioLavado;

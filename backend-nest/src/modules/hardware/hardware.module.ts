@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
-import { ArduinoService } from './arduino.service';
-import { HardwareController } from './hardware.controller';
+import { ServicioArduino } from './arduino.service';
+import { ControladorHardware } from './hardware.controller';
 
 @Module({
-  controllers: [HardwareController],
-  providers: [ArduinoService],
-  exports: [ArduinoService],
+  controllers: [ControladorHardware],
+  providers: [ServicioArduino],
+  exports: [ServicioArduino],
 })
-export class HardwareModule {}
+export class ModuloHardware {}
+
+// Alias para compatibilidad
+export const HardwareModule = ModuloHardware;

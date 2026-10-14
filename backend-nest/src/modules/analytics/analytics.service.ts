@@ -2,13 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 
 @Injectable()
-export class AnalyticsService {
-  private readonly logger = new Logger(AnalyticsService.name);
+export class ServicioAnalitica {
+  private readonly logger = new Logger(ServicioAnalitica.name);
   private readonly pythonApiUrl = process.env.PYTHON_ML_URL || 'http://127.0.0.1:8000';
 
-  /**
-   * Obtener predicción de demanda de lavados para los próximos días (consumiendo Python)
-   */
   async getDemandPredictions() {
     try {
       const response = await axios.get(`${this.pythonApiUrl}/predict/demand`, { timeout: 3000 });
@@ -19,9 +16,6 @@ export class AnalyticsService {
     }
   }
 
-  /**
-   * Obtener estado de mantenimiento predictivo de motores y bombas (consumiendo Python)
-   */
   async getPredictiveMaintenance() {
     try {
       const response = await axios.get(`${this.pythonApiUrl}/predict/maintenance`, { timeout: 3000 });
@@ -32,20 +26,17 @@ export class AnalyticsService {
     }
   }
 
-  /**
-   * Resumen estadístico integral
-   */
   async getAnalyticsOverview() {
     try {
       const response = await axios.get(`${this.pythonApiUrl}/stats/overview`, { timeout: 3000 });
       return response.data;
     } catch {
       return {
-        modelAccuracy: '94.2%',
-        historicalSamplesTrained: 14850,
-        modelType: 'RandomForestRegressor + Prophet',
-        peakTimeWindow: '11:00 AM - 3:00 PM',
-        expectedGrowthRate: '+12.4%',
+        modelAccuracy: '94.6%',
+        historicalSamplesTrained: 19200,
+        modelType: 'RandomForestRegressor + TimeSeries',
+        peakTimeWindow: '11:00 AM - 1:00 PM',
+        expectedGrowthRate: '+11.2%',
       };
     }
   }
@@ -59,19 +50,18 @@ export class AnalyticsService {
       return {
         day,
         predictedWashes,
-        predictedRevenue: predictedWashes * 28500,
+        predictedRevenue: predictedWashes * 20000,
         confidence: 0.91 + (Math.random() * 0.06),
       };
     });
 
     const hourlyCurve = [
-      { hour: '07:00', loadFactor: 0.15 },
-      { hour: '09:00', loadFactor: 0.45 },
-      { hour: '11:00', loadFactor: 0.85 },
-      { hour: '13:00', loadFactor: 0.95 },
-      { hour: '15:00', loadFactor: 0.75 },
-      { hour: '17:00', loadFactor: 0.88 },
-      { hour: '19:00', loadFactor: 0.40 },
+      { hour: '07:00 - 09:00', loadFactor: 0.22, status: 'BAJO' },
+      { hour: '09:00 - 11:00', loadFactor: 0.58, status: 'MODERADO' },
+      { hour: '11:00 - 13:00', loadFactor: 0.94, status: 'PICO MÁXIMO' },
+      { hour: '13:00 - 15:00', loadFactor: 0.82, status: 'ALTO' },
+      { hour: '15:00 - 17:00', loadFactor: 0.74, status: 'ALTO' },
+      { hour: '17:00 - 19:00', loadFactor: 0.86, status: 'ALTO' },
     ];
 
     return {
@@ -80,7 +70,7 @@ export class AnalyticsService {
       summary: {
         peakDay: 'Sábado',
         estimatedWeeklyRevenue: forecast.reduce((a, b) => a + b.predictedRevenue, 0),
-        trend: 'ASCENDENTE',
+        trend: 'ASCENDENTE (+11.2%)',
       },
     };
   }
@@ -89,44 +79,56 @@ export class AnalyticsService {
     return {
       components: [
         {
-          name: 'Bomba de Alta Presión (Triplex 200 Bar)',
-          healthScore: 89,
-          totalCycles: 1842,
-          cyclesToNextService: 450,
+          name: 'Bomba de Agua con Shampoo',
+          healthScore: 94,
+          totalCycles: 1420,
+          cyclesToNextService: 650,
           status: 'OPTIMO',
           riskLevel: 'BAJO',
-          recommendation: 'Cambio de empaques en 12 días estimado',
+          recommendation: 'Caudal y mezcla química óptimos.',
         },
         {
-          name: 'Compresor Turbina Secado (7.5 HP)',
-          healthScore: 74,
-          totalCycles: 2150,
-          cyclesToNextService: 150,
+          name: 'Motor de Esponjas / Cepillos',
+          healthScore: 88,
+          totalCycles: 1890,
+          cyclesToNextService: 410,
+          status: 'OPTIMO',
+          riskLevel: 'BAJO',
+          recommendation: 'Desgaste normal de cerdas y esponjas.',
+        },
+        {
+          name: 'Bomba de Agua para Enjuagar',
+          healthScore: 92,
+          totalCycles: 1540,
+          cyclesToNextService: 580,
+          status: 'OPTIMO',
+          riskLevel: 'BAJO',
+          recommendation: 'Presión nominal en 180 Bar.',
+        },
+        {
+          name: 'Abanico / Turbina de Secado',
+          healthScore: 79,
+          totalCycles: 2100,
+          cyclesToNextService: 180,
           status: 'ATENCION_PREVENTIVA',
           riskLevel: 'MEDIO',
-          recommendation: 'Revisión de rodamientos recomendada',
+          recommendation: 'Limpieza preventiva de filtro de admisión de aire.',
         },
         {
-          name: 'Electroválvula Espuma Activa',
+          name: 'Servomotor Talanquera (Arduino)',
           healthScore: 96,
-          totalCycles: 920,
+          totalCycles: 3410,
           cyclesToNextService: 1200,
           status: 'OPTIMO',
           riskLevel: 'BAJO',
-          recommendation: 'Operando dentro de los rangos nominales',
-        },
-        {
-          name: 'Servomotor Talanquera Entrada (Arduino)',
-          healthScore: 92,
-          totalCycles: 3100,
-          cyclesToNextService: 900,
-          status: 'OPTIMO',
-          riskLevel: 'BAJO',
-          recommendation: 'Lubricación preventiva de eje en 30 días',
+          recommendation: 'Calibración a 90 grados óptima.',
         },
       ],
-      systemIntegrity: '91.8%',
+      systemIntegrity: '91.4%',
       lastDiagnosticsRun: new Date().toISOString(),
     };
   }
 }
+
+// Alias para compatibilidad
+export const AnalyticsService = ServicioAnalitica;

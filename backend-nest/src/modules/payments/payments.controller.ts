@@ -7,29 +7,25 @@ import {
   HttpCode,
   HttpStatus,
   Logger,
-  BadRequestException,
 } from '@nestjs/common';
-import { WompiService } from './wompi.service';
-import { WashService } from '../wash/wash.service';
+import { ServicioWompi } from './wompi.service';
+import { ServicioLavado } from '../wash/wash.service';
 
 @Controller('payments')
-export class PaymentsController {
-  private readonly logger = new Logger(PaymentsController.name);
+export class ControladorPagos {
+  private readonly logger = new Logger(ControladorPagos.name);
 
   constructor(
-    private readonly wompiService: WompiService,
-    private readonly washService: WashService,
+    private readonly servicioWompi: ServicioWompi,
+    private readonly servicioLavado: ServicioLavado,
   ) {}
 
-  /**
-   * Genera los parámetros de checkout con firma SHA-256 para el Widget Wompi en React
-   */
   @Post('prepare/:sessionId')
   async prepareWompiCheckout(@Param('sessionId') sessionId: string) {
-    const session = await this.washService.getSessionById(sessionId);
+    const session = await this.servicioLavado.getSessionById(sessionId);
     const redirectUrl = process.env.CLIENT_REDIRECT_URL || `http://localhost:5173/tracker/${session.id}`;
 
-    const config = this.wompiService.getCheckoutConfig(
+    const config = this.servicioWompi.getCheckoutConfig(
       session.paymentReference,
       Number(session.amount),
       redirectUrl,
@@ -44,9 +40,6 @@ export class PaymentsController {
     };
   }
 
-  /**
-   * Webhook oficial de Wompi (Notificación de transacción completada)
-   */
   @HttpCode(HttpStatus.OK)
   @Post('wompi-webhook')
   async handleWompiWebhook(
@@ -61,13 +54,13 @@ export class PaymentsController {
     }
 
     const reference = data.reference;
-    const status = data.status; // 'APPROVED', 'DECLINED', etc.
+    const status = data.status;
     const transactionId = data.id;
 
     if (status === 'APPROVED') {
       try {
-        const session = await this.washService.getSessionByReference(reference);
-        await this.washService.handlePaymentApproved(session.id, transactionId);
+        const session = await this.servicioLavado.getSessionByReference(reference);
+        await this.servicioLavado.handlePaymentApproved(session.id, transactionId);
         this.logger.log(` Transacción ${transactionId} APROBADA para referencia ${reference}. Arduino notificado.`);
       } catch (err: any) {
         this.logger.error(`Error procesando sesión tras pago Wompi: ${err.message}`);
@@ -77,13 +70,10 @@ export class PaymentsController {
     return { received: true, status: 'PROCESSED' };
   }
 
-  /**
-   * Endpoint de simulación para pruebas en kiosco y desarrollo (sin requerir tarjeta real)
-   */
   @Post('simulate-success/:sessionId')
   async simulatePaymentSuccess(@Param('sessionId') sessionId: string) {
     const mockTransactionId = `SIM-WOMPI-${Date.now()}`;
-    const updated = await this.washService.handlePaymentApproved(sessionId, mockTransactionId);
+    const updated = await this.servicioLavado.handlePaymentApproved(sessionId, mockTransactionId);
     return {
       success: true,
       message: 'Pago simulado aprobado exitosamente. Señal enviada a Arduino para abrir talanquera.',
@@ -91,3 +81,6 @@ export class PaymentsController {
     };
   }
 }
+
+// Alias para compatibilidad
+export const PaymentsController = ControladorPagos;

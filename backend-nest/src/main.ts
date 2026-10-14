@@ -1,18 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import helmet from 'helmet';
-import { AppModule } from './app.module';
+import { ModuloPrincipal } from './app.module';
 
 async function bootstrap() {
   const logger = new Logger('CarWashBootstrap');
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(ModuloPrincipal);
 
   // 1. Capa de Seguridad HTTP con Helmet
   app.use(helmet());
 
   // 2. Configuración de CORS segura para Frontend React (Kiosco y Admin)
   app.enableCors({
-    origin: '*', // Permitir kioscos, apps móviles y backoffice local
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
@@ -36,7 +36,7 @@ async function bootstrap() {
   await app.listen(port);
 
   logger.log(`====================================================`);
-  logger.log(` CARWASH V3 BACKEND OPERACIONAL EN: http://localhost:${port}/api`);
+  logger.log(` CAR WASH V3 BACKEND OPERACIONAL EN: http://localhost:${port}/api`);
   logger.log(` Módulo Cliente (Público):  http://localhost:${port}/api/client/wash`);
   logger.log(` Módulo Admin (Protegido): http://localhost:${port}/api/admin/wash`);
   logger.log(` WebSockets en tiempo real: ws://localhost:${port}/wash-stream`);

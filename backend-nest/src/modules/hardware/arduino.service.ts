@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { Subject } from 'rxjs';
 
-export interface ArduinoEvent {
+export interface EventoArduino {
   type: 'BARRIER_OPENED' | 'CAR_DETECTED' | 'STAGE_CHANGE' | 'FINISHED' | 'ERROR';
   sessionId?: string;
   stage?: string;
@@ -9,15 +9,17 @@ export interface ArduinoEvent {
   timestamp: string;
 }
 
+// Alias para compatibilidad
+export type ArduinoEvent = EventoArduino;
+
 @Injectable()
-export class ArduinoService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(ArduinoService.name);
+export class ServicioArduino implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(ServicioArduino.name);
   private serialPort: any = null;
   private isConnected = false;
   private isEmulated = false;
 
-  // RxJS Subject para emitir eventos de hardware al resto del sistema
-  public readonly eventStream$ = new Subject<ArduinoEvent>();
+  public readonly eventStream$ = new Subject<EventoArduino>();
 
   async onModuleInit() {
     await this.connect();
@@ -32,7 +34,6 @@ export class ArduinoService implements OnModuleInit, OnModuleDestroy {
     const baudRate = parseInt(process.env.ARDUINO_BAUDRATE || '9600', 10);
 
     try {
-      // Intentar cargar dinámicamente serialport si está disponible
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { SerialPort } = require('serialport');
       // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -113,9 +114,6 @@ export class ArduinoService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  /**
-   * Enviar comando al Arduino para levantar la talanquera / barrera de acceso
-   */
   public async openBarrier(sessionId: string): Promise<boolean> {
     const wifiIp = process.env.ARDUINO_WIFI_IP;
     if (wifiIp) {
@@ -174,7 +172,7 @@ export class ArduinoService implements OnModuleInit, OnModuleDestroy {
       emulated: this.isEmulated,
       port: process.env.ARDUINO_PORT || 'COM3',
       baudRate: process.env.ARDUINO_BAUDRATE || '9600',
-      activeSensors: ['ULTRASONIC_IN', 'RELAY_PUMP_HIGH_PRESSURE', 'RELAY_FOAM', 'RELAY_WAX', 'RELAY_DRYERS', 'SERVO_BARRIER'],
+      activeSensors: ['Bomba Shampoo', 'Motor Esponjas', 'Bomba Enjuague', 'Abanico', 'Servo Talanquera'],
     };
   }
 
@@ -194,16 +192,13 @@ export class ArduinoService implements OnModuleInit, OnModuleDestroy {
     return true;
   }
 
-  /**
-   * Progresión paso a paso del ciclo de lavado (útil tanto para pruebas como para fallback)
-   */
   private simulateWashProgression(sessionId: string, plan: string) {
     const stages = [
-      { stage: 'STAGE_SHAMPOO', duration: 4000 },    // 1. Agua con Shampoo
-      { stage: 'STAGE_SPONGES', duration: 5000 },    // 2. Esponjas / Frotado
-      { stage: 'STAGE_RINSE', duration: 4500 },      // 3. Agua pa' enjuagar
-      { stage: 'STAGE_FAN_DRYING', duration: 5000 }, // 4. Abanico / Turbina secadora
-      { stage: 'STAGE_FINISHED', duration: 1000 },   // 5. Finalizado y salida
+      { stage: 'STAGE_SHAMPOO', duration: 4000 },
+      { stage: 'STAGE_SPONGES', duration: 5000 },
+      { stage: 'STAGE_RINSE', duration: 4500 },
+      { stage: 'STAGE_FAN_DRYING', duration: 5000 },
+      { stage: 'STAGE_FINISHED', duration: 1000 },
     ];
 
     let accumulatedTime = 1500;
@@ -226,3 +221,6 @@ export class ArduinoService implements OnModuleInit, OnModuleDestroy {
     }
   }
 }
+
+// Alias para compatibilidad
+export const ArduinoService = ServicioArduino;

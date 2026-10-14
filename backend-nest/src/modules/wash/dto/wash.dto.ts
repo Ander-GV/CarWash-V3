@@ -1,15 +1,15 @@
 import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Length, Min } from 'class-validator';
-import { WashPlan, WashStage } from '../../../common/enums/wash-stage.enum';
+import { PlanLavado, FaseLavado } from '../../../common/enums/wash-stage.enum';
 
-export class CreateWashDto {
+export class DtoCrearLavado {
   @IsString()
   @IsNotEmpty({ message: 'La placa del vehículo es requerida para el registro y puntos' })
   @Length(3, 10, { message: 'La placa debe tener entre 3 y 10 caracteres' })
   licensePlate: string;
 
-  @IsEnum(WashPlan)
+  @IsEnum(PlanLavado)
   @IsOptional()
-  plan?: WashPlan;
+  plan?: PlanLavado;
 
   @IsOptional()
   @IsString()
@@ -21,12 +21,16 @@ export class CreateWashDto {
   amount?: number;
 }
 
-export class UpdateWashStageDto {
-  @IsEnum(WashStage)
+export class DtoActualizarFaseLavado {
+  @IsEnum(FaseLavado)
   @IsNotEmpty()
-  stage: WashStage;
+  stage: FaseLavado;
 
   @IsOptional()
   @IsString()
   notes?: string;
 }
+
+// Alias para compatibilidad
+export const CreateWashDto = DtoCrearLavado;
+export const UpdateWashStageDto = DtoActualizarFaseLavado;

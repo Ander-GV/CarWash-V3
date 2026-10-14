@@ -5,10 +5,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Role } from '../../../common/enums/role.enum';
+import { Rol } from '../../../common/enums/role.enum';
 
 @Entity('users')
-export class User {
+export class Usuario {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -23,10 +23,10 @@ export class User {
 
   @Column({
     type: 'enum',
-    enum: Role,
-    default: Role.CLIENT,
+    enum: Rol,
+    default: Rol.CLIENT,
   })
-  role: Role;
+  role: Rol;
 
   @Column({ default: true })
   isActive: boolean;
@@ -37,3 +37,6 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 }
+
+// Alias para compatibilidad
+export const User = Usuario;
