@@ -1,6 +1,11 @@
 {
   "typescript.tsdk": "backend-nest/node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.suggest.completeFunctionCalls": true,
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingImports": "none",
+    "reportMissingModuleSource": "none"
+  },
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,
