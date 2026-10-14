@@ -1,0 +1,255 @@
+/* ==========================================================================
+   AUTOWASH PRIME V3 - DESIGN SYSTEM & AESTHETICS (DARK GLASSMORPHISM)
+   ========================================================================== */
+
+:root {
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* HSL Color Palette */
+  --bg-dark: #0a0f1d;
+  --bg-card: rgba(16, 24, 45, 0.75);
+  --bg-card-hover: rgba(22, 34, 64, 0.85);
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --border-glass-bright: rgba(56, 189, 248, 0.3);
+
+  /* Brand Accents */
+  --primary-cyan: #06b6d4;
+  --primary-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
+
+  /* Gradients */
+  --grad-primary: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);
+  --grad-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+  --grad-glow: radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.15) 0%, transparent 70%);
+
+  /* Text Colors */
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  /* Shadows */
+  --shadow-neon: 0 0 25px rgba(6, 182, 212, 0.25);
+  --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+  --shadow-inner: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image: var(--grad-glow);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+/* Glassmorphism Container */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-card), var(--shadow-inner);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel:hover {
+  border-color: var(--border-glass-bright);
+}
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: var(--grad-primary);
+  color: #ffffff;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  padding: 0.85rem 1.75rem;
+  border-radius: 0.85rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 25px -5px rgba(6, 182, 212, 0.4);
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px -5px rgba(6, 182, 212, 0.6);
+  filter: brightness(1.1);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  border: 1px solid var(--border-glass);
+  padding: 0.75rem 1.4rem;
+  border-radius: 0.75rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #f43f5e, #be123c);
+  color: #fff;
+  border: none;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-danger:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-info {
+  background: rgba(6, 182, 212, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.badge-danger {
+  background: rgba(244, 63, 94, 0.15);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+/* Pulse Animation for Hardware Status */
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--accent-emerald);
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Layout Utilities */
+.app-container {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.grid-cols-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.grid-cols-4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+/* Animated Neon Gradient Border */
+.neon-border {
+  position: relative;
+  background: var(--bg-card);
+  border-radius: 1.25rem;
+  z-index: 1;
+}
+
+.neon-border::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: var(--grad-primary);
+  border-radius: 1.35rem;
+  z-index: -1;
+  opacity: 0.6;
+  filter: blur(8px);
+  transition: opacity 0.3s ease;
+}
+
+.neon-border:hover::before {
+  opacity: 1;
+}
+
+/* Floating animation */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
