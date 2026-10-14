@@ -4,12 +4,13 @@ Contiene las clases de predicción de demanda por placas y análisis de mantenim
 """
 
 from datetime import datetime, timedelta
+import importlib
 import math
 
-# Fallback seguro por si numpy no está instalado en el entorno local del editor
+# Carga dinámica de numpy con fallback seguro para editores sin entorno virtual local
 try:
-    import numpy as np
-except ImportError:
+    np = importlib.import_module("numpy")
+except Exception:
     import random
     class _NumpyFallback:
         class random:

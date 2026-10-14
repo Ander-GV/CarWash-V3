@@ -1,16 +1,19 @@
 import os
 import sys
+import importlib
 
 # Asegurar resolución de módulos locales independientemente del directorio de ejecución
 DIRECTORIO_ACTUAL = os.path.dirname(os.path.abspath(__file__))
 if DIRECTORIO_ACTUAL not in sys.path:
     sys.path.insert(0, DIRECTORIO_ACTUAL)
 
-# Importar FastAPI con fallback seguro en caso de visualización en editores sin entorno virtual activo
+# Carga de FastAPI y CORSMiddleware con fallback seguro para editores sin entorno virtual activo
 try:
-    from fastapi import FastAPI
-    from fastapi.middleware.cors import CORSMiddleware
-except ImportError:
+    _fastapi_mod = importlib.import_module("fastapi")
+    FastAPI = getattr(_fastapi_mod, "FastAPI")
+    _cors_mod = importlib.import_module("fastapi.middleware.cors")
+    CORSMiddleware = getattr(_cors_mod, "CORSMiddleware")
+except Exception:
     class FastAPI:
         def __init__(self, *args, **kwargs): pass
         def add_middleware(self, *args, **kwargs): pass
@@ -20,11 +23,20 @@ except ImportError:
     class CORSMiddleware:
         pass
 
-# Importar las clases del modelo predictivo
+# Importar las clases del modelo predictivo desde predictor.py local
 try:
     from predictor import PredictorDemandaLavado, AnalizadorMantenimientoPredictivo
 except ImportError:
-    from .predictor import PredictorDemandaLavado, AnalizadorMantenimientoPredictivo
+    import importlib.util
+    ruta_predictor = os.path.join(DIRECTORIO_ACTUAL, "predictor.py")
+    spec = importlib.util.spec_from_file_location("predictor", ruta_predictor)
+    if spec and spec.loader:
+        _pred_mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(_pred_mod)
+        PredictorDemandaLavado = getattr(_pred_mod, "PredictorDemandaLavado")
+        AnalizadorMantenimientoPredictivo = getattr(_pred_mod, "AnalizadorMantenimientoPredictivo")
+    else:
+        raise
 
 app = FastAPI(
     title="CAR WASH - Microservicio de Analítica Predictiva e Inteligencia Vehicular",
@@ -97,7 +109,7 @@ get_stats_overview = obtener_resumen_estadisticas
 
 if __name__ == "__main__":
     try:
-        import uvicorn
-        uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-    except ImportError:
-        print("Para ejecutar el servidor localmente instala uvicorn o ejecuta 'docker compose up'")
+        _uvicorn = importlib.import_module("uvicorn")
+        _uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    except Exception:
+        print("Para ejecutar el microservicio localmente ejecuta 'docker compose up'")
