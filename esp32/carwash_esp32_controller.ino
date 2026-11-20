@@ -1,10 +1,10 @@
 #include <Arduino.h>
 
-// ----------------------------------------------------------------------------
+
 // SISTEMA DE CONTROL DE AUTOLAVADO - TIEMPOS CALIBRADOS EXACTOS (6 PRUEBAS OK)
 // COMPATIBLE CON GATEWAY IOT AZURE + WEBSOCKETS + DASHBOARD REACT
 // CONFIGURACIÓN OFICIAL DEFINIDA Y VALIDADA EN EL CHAT
-// ----------------------------------------------------------------------------
+
 
 // PINES DEL SISTEMA (VERIFICADOS EN HARDWARE REAL)
 const int PIN_VARILLA_AVANCE  = 14;
@@ -16,9 +16,9 @@ const int PIN_RELE_CHAMPU   = 17; // Relé 3 (LOW = ON)
 const int PIN_RELE_ENJUAGUE = 22; // Relé 2 (LOW = ON)
 const int PIN_RELE_SECADOR  = 23; // Relé 1 (LOW = ON)
 
-// ----------------------------------------------------------------------------
+
 // TIEMPOS DE OPERACIÓN DE CADA ESTACIÓN (ms) - CALIBRACIÓN CON TIEMPOS INTERMEDIOS
-// ----------------------------------------------------------------------------
+
 const unsigned long TIEMPO_LLEGADA_BOMBA1_MS = 700;  // 0.7s punto 0 a primera bomba (+0.2s)
 const unsigned long TIEMPO_ROCIADO_LENTO_MS  = 1500; // 1.5s rociado Bomba 1 (champú con avance lento)
 const unsigned long TIEMPO_VIAJE_ESPONJAS_MS = 2600; // 2.6s distancia Bomba 1 a Esponjas (+0.1s)
