@@ -490,7 +490,7 @@ const executeMockFallback = (config: any) => {
           data: {
             success: true,
             isEmergencyStopped: true,
-            message: '🛑 PARADA DE EMERGENCIA ACTIVADA: Todos los actuadores y bombas detenidos. Sistema bloqueado hasta orden explícita de reinicio.',
+            message: 'PARADA DE EMERGENCIA ACTIVADA: Todos los actuadores y bombas detenidos. Sistema bloqueado hasta orden explicita de reinicio.',
           },
         };
       }
@@ -502,7 +502,7 @@ const executeMockFallback = (config: any) => {
           data: {
             success: true,
             isEmergencyStopped: false,
-            message: '🟢 ORDEN DE REINICIO EJECUTADA: Sistema reactivado y listo para operar.',
+            message: 'ORDEN DE REINICIO EJECUTADA: Sistema reactivado y listo para operar.',
           },
         };
       }

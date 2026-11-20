@@ -1,15 +1,14 @@
 /**
- * 🚗 AUTOWASH PRIME V3 - LOCAL IOT GATEWAY BRIDGE
+ * AUTOWASH PRIME V3 - LOCAL IOT GATEWAY BRIDGE
  * 
- * Este script corre en tu laptop física conectada por USB (COM3) al ESP32.
- * Conecta el servidor desplegado en Azure con la maqueta física en tu mesa.
+ * Script local conectado por USB (COM3) al ESP32.
+ * Enlaza el servidor en Azure con el hardware mediante WebSockets y Serial UART.
  * 
- * Ejecución:
+ * Ejecucion:
  *   node gateway-bridge.js
  */
 
 const path = require('path');
-// Añadir carpetas de node_modules existentes para resolver dependencias automáticamente
 module.paths.push(path.resolve(__dirname, 'frontend-react', 'node_modules'));
 module.paths.push(path.resolve(__dirname, 'backend-nest', 'node_modules'));
 
@@ -17,7 +16,6 @@ const { io } = require('socket.io-client');
 const { SerialPort } = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
 
-// URL de tu backend desplegado en Azure (Cámbiala cuando tengas tu URL de Azure)
 const AZURE_BACKEND_URL = process.env.AZURE_URL || 'http://48.216.240.130';
 const COM_PORT_NAME = process.env.COM_PORT || 'COM3';
 const BAUDRATE = 115200;
@@ -38,11 +36,11 @@ const port = new SerialPort({
 const parser = port.pipe(new ReadlineParser({ delimiter: '\n' }));
 
 port.on('open', () => {
-  console.log(`✅ [SERIAL] Conexión USB establecida con ESP32 en ${COM_PORT_NAME}`);
+  console.log(`[OK] [SERIAL] Conexion USB establecida con ESP32 en ${COM_PORT_NAME}`);
 });
 
 port.on('error', (err) => {
-  console.error(`❌ [SERIAL ERROR]: ${err.message}`);
+  console.error(`[ERROR] [SERIAL]: ${err.message}`);
 });
 
 // 2. Conectar por WebSockets con Azure
@@ -51,16 +49,16 @@ const socket = io(`${AZURE_BACKEND_URL}/wash-stream`, {
 });
 
 socket.on('connect', () => {
-  console.log(`✅ [AZURE WEBSOCKET] Conectado exitosamente con Azure (Socket ID: ${socket.id})`);
+  console.log(`[OK] [AZURE WEBSOCKET] Conectado exitosamente con Azure (Socket ID: ${socket.id})`);
   socket.emit('subscribe_admin_live');
 });
 
 socket.on('disconnect', () => {
-  console.warn('⚠️ [AZURE WEBSOCKET] Desconectado del servidor Azure. Reconectando...');
+  console.warn('[WARN] [AZURE WEBSOCKET] Desconectado del servidor Azure. Reconectando...');
 });
 
 socket.on('connect_error', (err) => {
-  console.warn(`⚠️ [AZURE WEBSOCKET ERROR]: ${err.message}`);
+  console.warn(`[WARN] [AZURE WEBSOCKET ERROR]: ${err.message}`);
 });
 
 let isWashInProgress = false;
@@ -68,7 +66,7 @@ let lastSessionId = '';
 
 const triggerWash = (sessionId, origin) => {
   if (isWashInProgress) {
-    console.log(`ℹ️ [IGNORADO]: Lavado ya en curso físico. (Origen: ${origin})`);
+    console.log(`[INFO] [IGNORADO]: Lavado ya en curso fisico. (Origen: ${origin})`);
     return;
   }
   if (!sessionId || sessionId === lastSessionId) {
@@ -78,43 +76,42 @@ const triggerWash = (sessionId, origin) => {
   isWashInProgress = true;
   lastSessionId = sessionId;
   console.log(`\n========================================================`);
-  console.log(`🚀 [AZURE ORDEN]: INICIAR LAVADO RECIBIDO DESDE LA WEB`);
-  console.log(`   Sesión: ${sessionId} | Origen: ${origin}`);
+  console.log(`[ORDEN] [AZURE]: INICIAR LAVADO RECIBIDO DESDE LA WEB`);
+  console.log(`   Sesion: ${sessionId} | Origen: ${origin}`);
   console.log(`========================================================`);
 
   if (port.isOpen) {
     port.write(`CMD:START_WASH:${sessionId}:FULL_WASH\n`);
   } else {
-    console.warn(`⚠️ [PUERTO CERRADO]: No se pudo enviar la orden a ${COM_PORT_NAME}.`);
+    console.warn(`[WARN] [PUERTO CERRADO]: No se pudo enviar la orden a ${COM_PORT_NAME}.`);
     isWashInProgress = false;
     lastSessionId = '';
   }
 
-  // Watchdog de seguridad: después de 24 segundos se libera automáticamente
   setTimeout(() => {
     if (isWashInProgress) {
-      console.log('⏱️ [WATCHDOG]: Tiempo de lavado transcurrido. Sistema liberado para nuevo vehículo.\n');
+      console.log('[WATCHDOG]: Tiempo de lavado transcurrido. Sistema liberado para nuevo vehiculo.\n');
       isWashInProgress = false;
       lastSessionId = '';
     }
   }, 24000);
 };
 
-// 3. Órdenes que vienen desde la web en Azure hacia el ESP32
+// 3. Ordenes recibidas desde la web hacia el ESP32
 socket.on('admin_command', (cmd) => {
-  console.log(`📥 [AZURE COMANDO]: ${cmd}`);
+  console.log(`[COMANDO] [AZURE]: ${cmd}`);
   if (cmd.startsWith('CMD:START_WASH')) {
     const parts = cmd.split(':');
     const sId = parts[2] || `SESION-${Date.now()}`;
     triggerWash(sId, 'admin_command');
   } else if (cmd.includes('STOP') || cmd.includes('EMERGENCY')) {
-    console.log('🛑 [AZURE -> ESP32]: PARADA DE EMERGENCIA RECIBIDA. Deteniendo todo...');
+    console.log('[EMERGENCIA] [AZURE -> ESP32]: PARADA DE EMERGENCIA RECIBIDA. Deteniendo todo...');
     isWashInProgress = false;
     if (port.isOpen) {
       port.write('p\nCMD:EMERGENCY_STOP\n');
     }
   } else if (cmd.includes('RESUME')) {
-    console.log('🟢 [AZURE -> ESP32]: REANUDAR Y CONTINUAR SISTEMA');
+    console.log('[INFO] [AZURE -> ESP32]: REANUDAR Y CONTINUAR SISTEMA');
     isWashInProgress = true;
     if (port.isOpen) {
       port.write('CMD:RESUME\n');
@@ -132,7 +129,7 @@ socket.on('start_wash_order', (data) => {
 });
 
 socket.on('emergency_stop_triggered', () => {
-  console.log('🛑 [AZURE -> ESP32]: PARADA DE EMERGENCIA RECIBIDA');
+  console.log('[EMERGENCIA] [AZURE -> ESP32]: PARADA DE EMERGENCIA RECIBIDA');
   isWashInProgress = false;
   if (port.isOpen) {
     port.write('p\nCMD:EMERGENCY_STOP\n');
@@ -140,7 +137,7 @@ socket.on('emergency_stop_triggered', () => {
 });
 
 socket.on('system_resumed', () => {
-  console.log('🟢 [AZURE -> ESP32]: REANUDAR Y CONTINUAR SISTEMA');
+  console.log('[INFO] [AZURE -> ESP32]: REANUDAR Y CONTINUAR SISTEMA');
   isWashInProgress = true;
   if (port.isOpen) {
     port.write('CMD:RESUME\n');
@@ -148,7 +145,6 @@ socket.on('system_resumed', () => {
   }
 });
 
-// Detectar orden de inicio cuando cambia la sesión en el panel
 socket.on('stage_updated', (data) => {
   if (data?.sessionId && data.sessionId !== lastSessionId && (data.stage === 'STAGE_STARTING' || data.stage === 'STAGE_SHAMPOO')) {
     triggerWash(data.sessionId, 'stage_updated');
@@ -161,10 +157,10 @@ socket.on('admin_session_stage_updated', (data) => {
   }
 });
 
-// 4. Reportes físicos que vienen del ESP32 hacia Azure
+// 4. Reportes fisicos desde el ESP32 hacia Azure
 parser.on('data', (line) => {
   const cleanLine = line.trim();
-  console.log(`📤 [ESP32 -> AZURE]: ${cleanLine}`);
+  console.log(`[TELEMETRIA] [ESP32 -> AZURE]: ${cleanLine}`);
 
   if (
     cleanLine.startsWith('EVENT_FINISHED') || 
@@ -174,17 +170,15 @@ parser.on('data', (line) => {
   ) {
     if (isWashInProgress) {
       isWashInProgress = false;
-      // IMPORTANTE: Conservar lastSessionId para que los ecos de la sesión recién terminada NUNCA repitan el ciclo
-      console.log(`🏁 [ESP32]: Ciclo completado (Sesión: ${lastSessionId}). Sistema listo para el próximo vehículo.\n`);
+      console.log(`[FIN] [ESP32]: Ciclo completado (Sesion: ${lastSessionId}). Sistema listo para el proximo vehiculo.\n`);
     }
   }
 
   if (cleanLine.includes('EVENT_STOPPED') || cleanLine.includes('BLOQUEADO_POR_EMERGENCIA')) {
     isWashInProgress = false;
-    console.log(`🛑 [ESP32]: Confirmada Parada de Emergencia física. Actuadores apagados.`);
+    console.log(`[PARADA] [ESP32]: Confirmada Parada de Emergencia fisica. Actuadores apagados.`);
   }
 
-  // Retransmitir al servidor en Azure
   if (cleanLine.startsWith('LOC:')) {
     const parts = cleanLine.split(':');
     socket.emit('vehicle_location', {

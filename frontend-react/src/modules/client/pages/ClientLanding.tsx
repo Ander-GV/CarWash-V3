@@ -76,7 +76,7 @@ export const ClientLanding: React.FC = () => {
       // Si el cliente se ganó el lavado GRATIS por acumular puntos de fidelidad
       if (data.isFreeReward) {
         alert(
-          '🎉 ¡FELICITACIONES! Has completado los 5 lavados requeridos con esta placa. ¡Este ciclo te sale TOTALMENTE GRATIS! La talanquera se abrirá enseguida.'
+          'FELICITACIONES: Has completado los 5 lavados requeridos con esta placa. Este ciclo es totalmente gratis. La talanquera se abrira enseguida.'
         );
         navigate(`/tracker/${data.sessionId}`);
         return;
@@ -407,7 +407,7 @@ export const ClientLanding: React.FC = () => {
                         letterSpacing: '0.04em',
                       }}
                     >
-                      📅 Fidelidad Mensual • {loyaltyInfo?.currentMonthName || 'Mes Actual'}
+                      Fidelidad Mensual • {loyaltyInfo?.currentMonthName || 'Mes Actual'}
                     </span>
                     {loyaltyInfo?.allTimeApprovedWashes && (
                       <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
@@ -418,12 +418,12 @@ export const ClientLanding: React.FC = () => {
                   <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#f8fafc' }}>
                     {loyaltyInfo?.isNextWashFree ? (
                       <span style={{ color: '#34d399' }}>
-                        🎉 ¡LAVADO DE REGALO DISPONIBLE EN {loyaltyInfo?.currentMonthName?.toUpperCase() || 'ESTE MES'}!
+                        LAVADO DE REGALO DISPONIBLE EN {loyaltyInfo?.currentMonthName?.toUpperCase() || 'ESTE MES'}
                       </span>
                     ) : (loyaltyInfo?.monthApprovedWashes ?? loyaltyInfo?.totalApprovedWashes) > 0 ? (
                       `Vehículo Recurrente: ${loyaltyInfo.monthApprovedWashes ?? loyaltyInfo.totalApprovedWashes} de 5 lavados en ${loyaltyInfo.currentMonthName || 'este mes'}`
                     ) : (
-                      '⭐ Contabilidad Mensual: ¡Lava 5 veces este mes y el 6to es GRATIS!'
+                      'Contabilidad Mensual: Lava 5 veces este mes y el 6to es GRATIS'
                     )}
                   </div>
                   <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
