@@ -1,10 +1,10 @@
-# ⚡ Firmware ESP32 - Controlador Automatizado de Bahía IoT
+#  Firmware ESP32 - Controlador Automatizado de Bahía IoT
 
 Este directorio contiene el firmware en C++ para el módulo **ESP32** (NodeMCU-32S, ESP32 DevKit V1 o equivalente) encargado de operar los actuadores, la talanquera de acceso y los sensores de la bahía de lavado.
 
 ---
 
-## 📌 Mapa de Pines (GPIO ESP32)
+##  Mapa de Pines (GPIO ESP32)
 
 | Componente | Pin ESP32 (GPIO) | Tipo | Función |
 | :--- | :--- | :--- | :--- |
@@ -19,7 +19,7 @@ Este directorio contiene el firmware en C++ para el módulo **ESP32** (NodeMCU-3
 
 ---
 
-## 🛠️ Requisitos de Compilación
+##  Requisitos de Compilación
 
 1. **Arduino IDE** (v2.0+) o **VS Code + PlatformIO**.
 2. **Placa ESP32 en el gestor de tarjetas**:
@@ -31,7 +31,7 @@ Este directorio contiene el firmware en C++ para el módulo **ESP32** (NodeMCU-3
 
 ---
 
-## 🚀 Pasos de Instalación y Puesta en Marcha
+##  Pasos de Instalación y Puesta en Marcha
 
 1. Abre el archivo `esp32/carwash_esp32_controller.ino`.
 2. Edita las variables de red en la cabecera:
@@ -50,7 +50,7 @@ Este directorio contiene el firmware en C++ para el módulo **ESP32** (NodeMCU-3
 
 ---
 
-## 🌐 Contrato de Comunicación (Endpoints HTTP de la Bahía)
+##  Contrato de Comunicación (Endpoints HTTP de la Bahía)
 
 Cuando programes el ESP32 en tu otra aplicación (Arduino IDE, PlatformIO, etc.), solo debes asegurarte de que tu firmware implemente o consuma los siguientes canales de conexión:
 
@@ -80,7 +80,7 @@ Cuando el ESP32 detecte un evento o avance de fase, puede enviar un `POST` HTTP 
 
 ---
 
-## 🔌 Respaldo por Cable USB (Serial UART a 115200 Baudios)
+##  Respaldo por Cable USB (Serial UART a 115200 Baudios)
 
 Si decides conectar el ESP32 directamente por cable USB a la computadora/servidor:
 * **Esta app envía al ESP32:**
@@ -96,7 +96,7 @@ Si decides conectar el ESP32 directamente por cable USB a la computadora/servido
 
 ---
 
-## ⚙️ Configuración en CarWash V3 (`.env`)
+##  Configuración en CarWash V3 (`.env`)
 
 En el archivo `.env` de esta aplicación, solo necesitas configurar cómo te conectarás a tu ESP32:
 ```env
