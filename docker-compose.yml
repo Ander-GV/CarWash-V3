@@ -1,9 +1,5 @@
-version: '3.8'
-
 services:
-  # ==========================================
-  # 1. BASE DE DATOS POSTGRESQL
-  # ==========================================
+  # PostgreSQL
   postgres:
     image: postgres:16-alpine
     container_name: carwash_postgres
@@ -24,23 +20,28 @@ services:
       timeout: 5s
       retries: 5
 
-  # ==========================================
-  # 2. MICROSERVICIO PYTHON IA (FASTAPI)
-  # ==========================================
+  # Microservicio Python ML
   backend-python:
     build:
       context: ./backend-ml-python
       dockerfile: Dockerfile
     container_name: carwash_python_ml
     restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-carwash_db}
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "8000:8000"
     networks:
       - carwash_network
 
-  # ==========================================
-  # 3. BACKEND NESTJS + WEBSOCKETS + ARDUINO
-  # ==========================================
+  # Backend NestJS + IoT ESP32
   backend-nest:
     build:
       context: ./backend-nest
@@ -66,16 +67,15 @@ services:
       WOMPI_INTEGRITY_SECRET: ${WOMPI_INTEGRITY_SECRET:-test_integrity_1234567890abcdef}
       WOMPI_EVENTS_SECRET: ${WOMPI_EVENTS_SECRET:-test_events_secret_123456}
       PYTHON_ML_URL: http://backend-python:8000
-      ARDUINO_PORT: ${ARDUINO_PORT:-COM3}
-      ARDUINO_WIFI_IP: ${ARDUINO_WIFI_IP:-}
+      ESP32_WIFI_IP: ${ESP32_WIFI_IP:-}
+      ESP32_PORT: ${ESP32_PORT:-COM3}
+      ESP32_BAUDRATE: ${ESP32_BAUDRATE:-115200}
     ports:
       - "3000:3000"
     networks:
       - carwash_network
 
-  # ==========================================
-  # 4. FRONTEND REACT (KIOSCO & BACKOFFICE)
-  # ==========================================
+  # Frontend React
   frontend-react:
     build:
       context: ./frontend-react

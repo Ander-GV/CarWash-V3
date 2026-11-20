@@ -65,7 +65,7 @@ export const WashLogsView: React.FC = () => {
           </div>
           <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Entradas a Bahía de Lavado</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            Auditoría de todos los vehículos que han ingresado mediante talanquera Arduino y pasarela Wompi
+            Auditoría de todos los vehículos que han ingresado mediante talanquera automatizada y pasarela Wompi
           </p>
         </div>
 
@@ -127,7 +127,7 @@ export const WashLogsView: React.FC = () => {
                 <th style={{ padding: '0.85rem 1rem' }}>MONTO (COP)</th>
                 <th style={{ padding: '0.85rem 1rem' }}>ESTADO PAGO</th>
                 <th style={{ padding: '0.85rem 1rem' }}>REFERENCIA WOMPI</th>
-                <th style={{ padding: '0.85rem 1rem' }}>FASE ARDUINO</th>
+                <th style={{ padding: '0.85rem 1rem' }}>ESTADO BAHÍA / HARDWARE</th>
                 <th style={{ padding: '0.85rem 1rem' }}>FECHA / HORA</th>
               </tr>
             </thead>

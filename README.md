@@ -1,6 +1,6 @@
 # 🚗 AutoWash Prime V3 - Sistema Automatizado IoT
 
-Sistema integral de autolavado inteligente basado en **Clean Architecture**, con control de actuadores en **Arduino**, pasarela de pagos **Wompi**, backend de alta concurrencia en **NestJS + PostgreSQL**, microservicio de analítica predictiva en **Python (FastAPI + Machine Learning)** y frontend en **React (Kiosco Touch Cliente + Backoffice Admin)**.
+Sistema integral de autolavado inteligente basado en **Clean Architecture**, con control de actuadores en **Hardware IoT**, pasarela de pagos **Wompi**, backend de alta concurrencia en **NestJS + PostgreSQL**, microservicio de analítica predictiva en **Python (FastAPI + Machine Learning)** y frontend en **React (Kiosco Touch Cliente + Backoffice Admin)**.
 
 ---
 
@@ -17,8 +17,8 @@ CarWash V3/
 │   │   │   ├── guards/           # JwtAuthGuard, RolesGuard
 │   │   │   └── enums/            # Role, WashStage, WashPlan
 │   │   ├── modules/
-│   │   │   ├── auth/             # Autenticación JWT, Hasheo Bcrypt y Roles
-│   │   │   ├── hardware/         # ArduinoService (SerialPort UART + Emulador Fallback)
+│   │   │   ├── auth/             # Autenticación JWT, Hasheo Bcrypt, Registro de Admins
+│   │   │   ├── hardware/         # HardwareService (Controlador Bahía IoT + Emulador Fallback)
 │   │   │   ├── payments/         # WompiService (Firma SHA-256 + Webhooks)
 │   │   │   ├── wash/             # Controladores Separados Cliente y Admin + WebSockets
 │   │   │   │   ├── wash-client.controller.ts  # /api/client/wash/** (Público / Kiosco)
@@ -34,26 +34,24 @@ CarWash V3/
 │   ├── predictor.py              # Algoritmos de Machine Learning (RandomForest & Time Series)
 │   └── requirements.txt
 │
-├── frontend-react/               # Aplicación React + Vite (Kiosco y Dashboard)
-│   ├── src/
-│   │   ├── modules/
-│   │   │   ├── client/           # Módulo Público / Kiosco Touch
-│   │   │   │   ├── pages/ClientLanding.tsx     # Landing animada con selector de planes
-│   │   │   │   ├── pages/WashLiveTracker.tsx   # Visualizador en vivo de fases (WebSockets)
-│   │   │   │   └── components/WompiCheckoutModal.tsx # Checkout Wompi + Sandbox
-│   │   │   └── admin/            # Módulo Privado / Backoffice
-│   │   │       ├── pages/AdminLogin.tsx        # Login administrativo
-│   │   │       ├── pages/AdminDashboard.tsx    # Métricas en tiempo real y control Arduino
-│   │   │       ├── pages/WashLogsView.tsx      # Registro y auditoría de entradas
-│   │   │       └── pages/PredictiveAnalyticsView.tsx # Visualizador de IA y Mantenimiento IoT
-│   │   ├── shared/               # Componentes y Servicios Reutilizables
-│   │   │   ├── components/Navbar.tsx
-│   │   │   ├── components/ProtectedRoute.tsx
-│   │   │   └── services/api.ts & socket.ts
-│   │   └── index.css             # Sistema de diseño Neon Glassmorphism
-│
-└── arduino/
-    └── carwash_controller.ino    # Firmware en C++ para Servomotor, Sensor Ultrasónico y Relés
+└── frontend-react/               # Aplicación React + Vite (Kiosco y Dashboard)
+    ├── src/
+    │   ├── modules/
+    │   │   ├── client/           # Módulo Público / Kiosco Touch
+    │   │   │   ├── pages/ClientLanding.tsx     # Landing ultra-moderna, Fidelización, 4 Fases y FAQ
+    │   │   │   ├── pages/WashLiveTracker.tsx   # Visualizador en vivo de fases (WebSockets)
+    │   │   │   └── components/WompiCheckoutModal.tsx # Checkout Wompi + Sandbox
+    │   │   └── admin/            # Módulo Privado / Backoffice
+    │   │       ├── pages/AdminLogin.tsx        # Login administrativo
+    │   │       ├── pages/AdminDashboard.tsx    # Métricas en tiempo real y control de Bahía
+    │   │       ├── pages/AdminManagementView.tsx # Gestión y Registro de Administradores
+    │   │       ├── pages/WashLogsView.tsx      # Registro y auditoría de entradas
+    │   │       └── pages/PredictiveAnalyticsView.tsx # Visualizador de IA y Mantenimiento IoT
+    │   ├── shared/               # Componentes y Servicios Reutilizables
+    │   │   ├── components/Navbar.tsx
+    │   │   ├── components/ProtectedRoute.tsx
+    │   │   └── services/api.ts & socket.ts
+    │   └── index.css             # Sistema de diseño Neon Glassmorphism
 ```
 
 ---
@@ -105,31 +103,29 @@ public class SecurityConfig {
 
 ---
 
-## 🔌 Conexión de Hardware: Arduino + NestJS
+## 🔌 Conexión de Hardware: Controlador de Bahía IoT + NestJS
 
-El firmware del Arduino (`arduino/carwash_controller.ino`) gestiona la barrera y la bancada de relés mediante comunicación serial UART bidireccional a 9600 baudios:
+El servicio `HardwareService` gestiona la talanquera de acceso y los 4 actuadores del ciclo de lavado automatizado:
 
-| Dispositivo / Actuador | Pin Arduino | Función |
+| Dispositivo / Actuador | Componente Hardware | Función |
 | :--- | :--- | :--- |
-| **Servomotor Talanquera** | `D11` | Levanta barrera de entrada al recibir pago Wompi |
-| **Sensor Ultrasónico HC-SR04** | `TRIG D12 / ECHO D13` | Detección de vehículo en posición de bahía |
-| **Bomba Alta Presión** | `Relé D4` | Prelavado y Enjuague a 200 Bar |
-| **Inyector Espuma Activa** | `Relé D5` | Dosificación de químico desengrasante |
-| **Electroválvula Enjuague** | `Relé D6` | Agua desionizada sin minerales |
-| **Dosificador Cera** | `Relé D7` | Aplicación de cera nanotecnológica brillo espejo |
-| **Turbinas de Secado Turbo** | `Relé D8` | Turbinas de aire a 180 km/h |
+| **Servomotor Talanquera** | Actuador Servo 90° | Levanta barrera de entrada al confirmarse el pago |
+| **Bomba Shampoo y Espuma** | Relé 1 | Inyección de espuma activa biodegradable |
+| **Motor Esponjas Soft-Touch** | Relé 2 | Frotado suave de carrocería con microfibras |
+| **Bomba Enjuague Hidro-Jet** | Relé 3 | Agua desionizada purificada a 180 Bar |
+| **Turbina AeroDry** | Relé 4 | Turbina ciclónica de secado por aire |
 
-### Protocolo Serial UART:
-- **NestJS -> Arduino:**
-  - `CMD:OPEN_BARRIER:{sessionId}\n` (Abre talanquera)
-  - `CMD:START_WASH:{sessionId}:{plan}\n` (Arranca secuencia)
-  - `CMD:EMERGENCY_STOP\n` (Corta relés inmediatamente)
-- **Arduino -> NestJS:**
-  - `EVENT_BARRIER_OPENED:{sessionId}`
-  - `STAGE_CHANGE:{stage}:{sessionId}`
-  - `EVENT_FINISHED:{sessionId}`
+### Ciclo y Eventos de Bahía:
+- **NestJS -> Hardware:**
+  - `openBarrier(sessionId)` (Abre talanquera de acceso)
+  - `startWashSequence(sessionId, plan)` (Ejecuta las 4 etapas del lavado automatizado)
+  - `emergencyStop()` (Desenergiza todos los actuadores inmediatamente)
+- **Hardware -> NestJS:**
+  - `BARRIER_OPENED`
+  - `STAGE_CHANGE` (`STAGE_SHAMPOO`, `STAGE_SPONGES`, `STAGE_RINSE`, `STAGE_FAN_DRYING`)
+  - `FINISHED`
 
-> **Modo Emulación Automático:** Si el Arduino físico no está conectado al puerto COM3, el servicio `ArduinoService` activa automáticamente el modo de emulación para permitir pruebas y desarrollo sin que la aplicación se detenga.
+> **Modo Emulación Automático:** Si no hay hardware físico conectado, el servicio `HardwareService` activa automáticamente el modo de emulación para permitir pruebas y desarrollo fluido.
 
 ---
 
@@ -137,7 +133,7 @@ El firmware del Arduino (`arduino/carwash_controller.ino`) gestiona la barrera y
 
 1. **Cálculo de Firma de Integridad:** Se calcula el hash criptográfico SHA-256 requerido por Wompi:
    $$\text{Signature} = \text{SHA256}(\text{referencia} + \text{montoEnCentavos} + \text{moneda} + \text{integritySecret})$$
-2. **Webhook Seguro:** El endpoint `POST /api/payments/wompi-webhook` recibe el evento de aprobación de la transacción, verifica el identificador y dispara de inmediato la orden al Arduino.
+2. **Webhook Seguro:** El endpoint `POST /api/payments/wompi-webhook` recibe el evento de aprobación de la transacción, verifica el identificador y dispara de inmediato la orden al controlador de bahía.
 3. **Simulador Sandbox Integrado:** La interfaz incluye un botón para aprobar pagos de prueba inmediatamente en el kiosco sin necesidad de tarjetas reales.
 
 ---

@@ -75,21 +75,39 @@ export const AdminLogin: React.FC = () => {
 
         {error && (
           <div
+            id="login-error-alert"
+            className="animate-slide-up"
             style={{
               display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.75rem 1rem',
-              borderRadius: '0.65rem',
-              background: 'rgba(244, 63, 94, 0.15)',
-              border: '1px solid rgba(244, 63, 94, 0.3)',
-              color: '#fb7185',
-              fontSize: '0.85rem',
+              alignItems: 'flex-start',
+              gap: '0.65rem',
+              padding: '0.85rem 1rem',
+              borderRadius: '0.75rem',
+              background: error.toLowerCase().includes('suspendida')
+                ? 'rgba(245, 158, 11, 0.15)'
+                : 'rgba(244, 63, 94, 0.15)',
+              border: error.toLowerCase().includes('suspendida')
+                ? '1px solid rgba(245, 158, 11, 0.4)'
+                : '1px solid rgba(244, 63, 94, 0.4)',
+              color: error.toLowerCase().includes('suspendida') ? '#fcd34d' : '#fb7185',
+              fontSize: '0.875rem',
               marginBottom: '1.25rem',
+              boxShadow: error.toLowerCase().includes('suspendida')
+                ? '0 0 15px rgba(245, 158, 11, 0.2)'
+                : '0 0 15px rgba(244, 63, 94, 0.2)',
             }}
           >
-            <ShieldAlert size={18} />
-            {error}
+            <ShieldAlert size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '0.9rem', marginBottom: '0.15rem' }}>
+                {error.toLowerCase().includes('suspendida')
+                  ? 'Su cuenta se encuentra suspendida'
+                  : error.toLowerCase().includes('no existe')
+                  ? 'Cuenta no existe'
+                  : 'Error de Acceso'}
+              </div>
+              <div style={{ opacity: 0.95, fontSize: '0.825rem' }}>{error}</div>
+            </div>
           </div>
         )}
 
@@ -105,6 +123,7 @@ export const AdminLogin: React.FC = () => {
                 style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }}
               />
               <input
+                id="login-input-email"
                 type="email"
                 required
                 value={email}
@@ -134,6 +153,7 @@ export const AdminLogin: React.FC = () => {
                 style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }}
               />
               <input
+                id="login-input-password"
                 type="password"
                 required
                 value={password}
@@ -153,6 +173,7 @@ export const AdminLogin: React.FC = () => {
           </div>
 
           <button
+            id="login-submit-button"
             type="submit"
             disabled={loading}
             className="btn-primary"
@@ -162,10 +183,10 @@ export const AdminLogin: React.FC = () => {
           </button>
         </form>
 
-        {/* Credentials reminder badge */}
+        {/* Credentials reminder & fast test selector */}
         <div
           style={{
-            marginTop: '1.75rem',
+            marginTop: '1.5rem',
             padding: '0.85rem',
             borderRadius: '0.75rem',
             background: 'rgba(255, 255, 255, 0.03)',
@@ -174,11 +195,56 @@ export const AdminLogin: React.FC = () => {
             color: 'var(--text-muted)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#38bdf8', fontWeight: 700, marginBottom: '0.3rem' }}>
-            <CheckCircle2 size={14} /> Credenciales de Administrador por Defecto:
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#38bdf8', fontWeight: 700, marginBottom: '0.4rem' }}>
+            <CheckCircle2 size={14} /> Cuentas para Pruebas Rápidas:
           </div>
-          <div>Usuario: <strong>admin@carwash.com</strong></div>
-          <div>Clave: <strong>AdminCarWash2026!</strong></div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            <button
+              type="button"
+              onClick={() => { setEmail('admin@carwash.com'); setPassword('AdminCarWash2026!'); setError(''); }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#94a3b8',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+                padding: '0.15rem 0',
+              }}
+            >
+              • <strong>admin@carwash.com</strong> (Admin Maestro)
+            </button>
+            <button
+              type="button"
+              onClick={() => { setEmail('supervisor@carwash.com'); setPassword('AdminCarWash2026!'); setError(''); }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#94a3b8',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+                padding: '0.15rem 0',
+              }}
+            >
+              • <strong>supervisor@carwash.com</strong> (Supervisor)
+            </button>
+            <button
+              type="button"
+              onClick={() => { setEmail('operador.bahia@carwash.com'); setPassword('AdminCarWash2026!'); setError(''); }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#94a3b8',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+                padding: '0.15rem 0',
+              }}
+            >
+              • <strong>operador.bahia@carwash.com</strong> (Operador Bahía)
+            </button>
+          </div>
         </div>
       </div>
     </div>

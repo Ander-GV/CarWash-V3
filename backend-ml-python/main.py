@@ -1,6 +1,7 @@
 import os
 import sys
 import importlib
+from typing import Optional, Dict, Any
 
 # Asegurar resolución de módulos locales independientemente del directorio de ejecución
 DIRECTORIO_ACTUAL = os.path.dirname(os.path.abspath(__file__))
@@ -15,9 +16,14 @@ try:
     CORSMiddleware = getattr(_cors_mod, "CORSMiddleware")
 except Exception:
     class FastAPI:
-        def __init__(self, *args, **kwargs): pass
+        def __init__(self, *args, **kwargs):
+            self.title = kwargs.get("title", "CAR WASH ML Analytics")
+            self.description = kwargs.get("description", "")
+            self.version = kwargs.get("version", "1.0.0")
         def add_middleware(self, *args, **kwargs): pass
         def get(self, *args, **kwargs):
+            return lambda fn: fn
+        def post(self, *args, **kwargs):
             return lambda fn: fn
 
     class CORSMiddleware:
@@ -40,8 +46,8 @@ except ImportError:
 
 app = FastAPI(
     title="CAR WASH - Microservicio de Analítica Predictiva e Inteligencia Vehicular",
-    description="Microservicio en Python para análisis de demanda, retención de placas vehiculares y mantenimiento preventivo.",
-    version="1.0.0"
+    description="Microservicio en Python para modelado de demanda (RandomForestRegressor), retención de placas y mantenimiento preventivo.",
+    version="2.0.0"
 )
 
 app.add_middleware(
@@ -52,7 +58,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Instanciación de las clases en español
+# Instanciación de las clases del modelo de ML
 predictor_demanda = PredictorDemandaLavado()
 analizador_mantenimiento = AnalizadorMantenimientoPredictivo()
 
@@ -61,10 +67,13 @@ def verificar_estado():
     return {
         "servicio": "CAR WASH ML Analytics",
         "estado": "ONLINE",
-        "version": "1.0.0"
+        "version": "2.0.0",
+        "modeloActivo": predictor_demanda.model_metrics.get("modelName"),
+        "entrenadoEnDatosReales": predictor_demanda.model_metrics.get("isTrainedOnRealData"),
+        "muestrasEntrenadas": predictor_demanda.model_metrics.get("trainingSamples")
     }
 
-# Alias de compatibilidad para el endpoint raíz
+# Alias de compatibilidad
 health_check = verificar_estado
 
 @app.get("/predict/demand")
@@ -90,26 +99,41 @@ get_maintenance_prediction = obtener_prediccion_mantenimiento
 
 @app.get("/stats/overview")
 def obtener_resumen_estadisticas():
-    return {
-        "modelName": "CAR WASH Modelo de Recurrencia por Placa y Demanda",
-        "meanAbsoluteError": 1.42,
-        "r2Score": 0.946,
-        "trainingSamples": 19200,
-        "featuresUsed": [
-            "frecuencia_placa_vehiculo",
-            "hora_del_dia",
-            "factor_clima",
-            "ciclos_turbina_abanico",
-            "desgaste_motor_esponjas"
-        ]
-    }
+    # Retorna las métricas dinámicas reales calculadas por el modelo entrenado
+    return predictor_demanda.model_metrics
 
 # Alias de función
 get_stats_overview = obtener_resumen_estadisticas
+
+@app.post("/train")
+def reentrenar_modelo():
+    """
+    Endpoint para forzar reentrenamiento con datos frescos de la base de datos PostgreSQL.
+    """
+    metricas = predictor_demanda.entrenar_modelo()
+    return {
+        "success": True,
+        "message": "Modelo RandomForestRegressor re-entrenado y pesos de demanda actualizados",
+        "metrics": metricas
+    }
+
+@app.post("/sync-data")
+def sincronizar_sesiones(payload: Optional[Dict[str, Any]] = None):
+    """
+    Permite a NestJS enviar las sesiones de lavado registradas para reentrenar el modelo
+    incluso si los microservicios no comparten red directa de base de datos.
+    """
+    sessions = (payload or {}).get("sessions", [])
+    predictor_demanda.sincronizar_datos(sessions)
+    return {
+        "success": True,
+        "registrosSincronizados": len(sessions),
+        "metrics": predictor_demanda.model_metrics
+    }
 
 if __name__ == "__main__":
     try:
         _uvicorn = importlib.import_module("uvicorn")
         _uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
     except Exception:
-        print("Para ejecutar el microservicio localmente ejecuta 'docker compose up'")
+        print("Para ejecutar el microservicio localmente ejecuta 'docker compose up' o 'uvicorn main:app --port 8000'")

@@ -49,6 +49,26 @@ export class GatewayLavado implements OnGatewayConnection, OnGatewayDisconnect {
     return { status: 'ADMIN_SUBSCRIBED' };
   }
 
+  @SubscribeMessage('vehicle_location')
+  handleVehicleLocation(@MessageBody() data: any) {
+    this.server.to('admin_live_room').emit('vehicle_location', data);
+    this.server.emit('vehicle_location', data);
+  }
+
+  @SubscribeMessage('stage_change_event')
+  handleStageChangeEvent(@MessageBody() data: any) {
+    if (data?.stage && data?.sessionId) {
+      this.broadcastStageChange(data.sessionId, data.stage as any);
+    }
+  }
+
+  @SubscribeMessage('wash_finished_event')
+  handleWashFinished(@MessageBody() data: any) {
+    this.server.to('admin_live_room').emit('stage_updated', { stage: 'STAGE_FINISHED', timestamp: new Date().toISOString() });
+    this.server.to('admin_live_room').emit('vehicle_location', { location: 'INICIO', percent: 0 });
+    this.server.emit('stage_updated', { stage: 'STAGE_FINISHED', timestamp: new Date().toISOString() });
+  }
+
   broadcastStageChange(sessionId: string, stage: FaseLavado, metadata?: any) {
     const payload = {
       sessionId,
@@ -59,6 +79,8 @@ export class GatewayLavado implements OnGatewayConnection, OnGatewayDisconnect {
 
     this.server.to(`session_${sessionId}`).emit('stage_updated', payload);
     this.server.to('admin_live_room').emit('admin_session_stage_updated', payload);
+    this.server.to('admin_live_room').emit('stage_updated', payload);
+    this.server.emit('stage_updated', payload);
   }
 
   broadcastBarrierOpened(sessionId: string) {

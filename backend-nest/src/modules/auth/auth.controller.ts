@@ -1,4 +1,15 @@
-import { Controller, Post, Body, Get, UseGuards, Req, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Delete,
+  Param,
+  UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { ServicioAutenticacion } from './auth.service';
 import { DtoIniciarSesion, DtoRegistro } from './dto/auth.dto';
 import { GuardAutenticacionJwt } from '../../common/guards/jwt-auth.guard';
@@ -25,6 +36,31 @@ export class ControladorAutenticacion {
       message: 'Perfil autenticado correctamente',
       user: req.user,
     };
+  }
+
+  // Endpoints para Gestión y Registro de Administradores
+  @UseGuards(GuardAutenticacionJwt)
+  @Get('admins')
+  async getAdmins() {
+    return this.servicioAutenticacion.getAdmins();
+  }
+
+  @UseGuards(GuardAutenticacionJwt)
+  @Post('admins')
+  async registerAdmin(@Body() registerDto: DtoRegistro) {
+    return this.servicioAutenticacion.registerAdmin(registerDto);
+  }
+
+  @UseGuards(GuardAutenticacionJwt)
+  @Delete('admins/:id')
+  async deleteAdmin(@Param('id') id: string) {
+    return this.servicioAutenticacion.deleteAdmin(id);
+  }
+
+  @UseGuards(GuardAutenticacionJwt)
+  @Post('admins/:id/toggle-status')
+  async toggleAdminStatus(@Param('id') id: string) {
+    return this.servicioAutenticacion.toggleUserStatus(id);
   }
 }
 

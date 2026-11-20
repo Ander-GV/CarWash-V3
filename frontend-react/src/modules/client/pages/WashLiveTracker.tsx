@@ -8,6 +8,11 @@ import {
   CheckCircle2,
   RefreshCw,
   Gift,
+  MapPin,
+  Flag,
+  Layers,
+  ArrowLeft,
+  ArrowRight,
 } from 'lucide-react';
 import api from '../../../shared/services/api';
 import { getSocket } from '../../../shared/services/socket';
@@ -24,7 +29,7 @@ const WASH_STAGES_CONFIG: WashStageInfo[] = [
   {
     key: 'BARRIER_OPENED',
     label: 'Talanquera Abierta',
-    description: 'Talanquera levantada por Arduino. Ingrese su vehículo a la bahía.',
+    description: 'Talanquera levantada automáticamente. Ingrese su vehículo a la bahía.',
     icon: Car,
     durationSec: 10,
   },
@@ -70,6 +75,10 @@ export const WashLiveTracker: React.FC = () => {
   const [session, setSession] = useState<any>(null);
   const [currentStage, setCurrentStage] = useState<string>('BARRIER_OPENED');
   const [loading, setLoading] = useState(true);
+  const [vehicleLocation, setVehicleLocation] = useState<{ location: string; percent: number }>({
+    location: 'INICIO',
+    percent: 0,
+  });
 
   useEffect(() => {
     if (!sessionId) return;
@@ -96,6 +105,21 @@ export const WashLiveTracker: React.FC = () => {
     socket.on('stage_updated', (data: any) => {
       if (data.sessionId === sessionId) {
         setCurrentStage(data.stage);
+        if (data.stage === 'STAGE_SHAMPOO') setVehicleLocation({ location: 'BOMBA_1_CHAMPU', percent: 20 });
+        else if (data.stage === 'STAGE_SPONGES') setVehicleLocation({ location: 'ESPONJAS_ACTIVAS', percent: 50 });
+        else if (data.stage === 'STAGE_RINSE') setVehicleLocation({ location: 'BOMBA_2_ENJUAGUE', percent: 75 });
+        else if (data.stage === 'STAGE_FAN_DRYING') setVehicleLocation({ location: 'SECADOR_ABANICO', percent: 95 });
+        else if (data.stage === 'STAGE_RETURNING') setVehicleLocation({ location: 'RETORNO_ESPEJO', percent: 60 });
+        else if (data.stage === 'STAGE_FINISHED') setVehicleLocation({ location: 'INICIO', percent: 0 });
+      }
+    });
+
+    socket.on('vehicle_location', (data: any) => {
+      if (data?.location) {
+        setVehicleLocation({
+          location: data.location,
+          percent: data.percent ?? 0,
+        });
       }
     });
 
@@ -107,6 +131,7 @@ export const WashLiveTracker: React.FC = () => {
 
     return () => {
       socket.off('stage_updated');
+      socket.off('vehicle_location');
       socket.off('barrier_status');
     };
   }, [sessionId]);
@@ -126,7 +151,7 @@ export const WashLiveTracker: React.FC = () => {
     return (
       <div style={{ textAlign: 'center', padding: '6rem 2rem', color: '#06b6d4' }}>
         <RefreshCw size={40} className="animate-spin" style={{ margin: '0 auto 1.5rem auto' }} />
-        <h2>Sincronizando con Arduino...</h2>
+        <h2>Sincronizando con Controlador de Bahía...</h2>
       </div>
     );
   }
@@ -186,7 +211,7 @@ export const WashLiveTracker: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
           <span className="pulse-dot"></span>
           <span style={{ fontSize: '0.85rem', color: 'var(--accent-emerald)', fontWeight: 600 }}>
-            Arduino en Vivo (COM3)
+            Bahía Automatizada (En Vivo)
           </span>
         </div>
       </div>
@@ -269,6 +294,84 @@ export const WashLiveTracker: React.FC = () => {
                 boxShadow: '0 0 12px rgba(6, 182, 212, 0.8)',
               }}
             />
+          </div>
+
+          {/* Indicador de Ubicación Física del Vehículo en la Pista */}
+          <div
+            style={{
+              marginTop: '2.5rem',
+              padding: '1.25rem',
+              background: 'rgba(0, 0, 0, 0.25)',
+              borderRadius: '1rem',
+              border: '1px solid rgba(255, 255, 255, 0.06)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', fontSize: '0.85rem' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#38bdf8', fontWeight: 700 }}>
+                <MapPin size={16} /> Ubicación Física en la Bahía:
+              </span>
+              <span className="badge badge-info" style={{ fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                {vehicleLocation.location.includes('RETORNO') ? <ArrowLeft size={13} /> : <ArrowRight size={13} />}
+                {vehicleLocation.location.includes('RETORNO') ? 'Retornando a Inicio' : 'Avanzando en Bahía'}
+              </span>
+            </div>
+
+            {/* Pista física con carrito */}
+            <div style={{ position: 'relative', margin: '1rem 0.5rem 0.5rem 0.5rem' }}>
+              <div
+                style={{
+                  height: '8px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  borderRadius: '9999px',
+                }}
+              >
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${vehicleLocation.percent}%`,
+                    background: 'linear-gradient(90deg, #06b6d4, #10b981)',
+                    borderRadius: '9999px',
+                    transition: 'width 0.6s ease',
+                  }}
+                />
+              </div>
+
+              {/* Icono del vehículo */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '-20px',
+                  left: `calc(${vehicleLocation.percent}% - 16px)`,
+                  transition: 'left 0.6s ease',
+                }}
+              >
+                <div
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #06b6d4, #2563eb)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 0 15px rgba(6, 182, 212, 0.8)',
+                    color: '#fff',
+                    transform: vehicleLocation.location.includes('RETORNO') ? 'scaleX(-1)' : 'scaleX(1)',
+                  }}
+                >
+                  <Car size={16} />
+                </div>
+              </div>
+
+              {/* Estaciones */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.25rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}><Flag size={12} /> Inicio</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}><Droplets size={12} /> Champú</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}><Layers size={12} /> Esponjas</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}><Droplets size={12} /> Enjuague</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}><Wind size={12} /> Abanico</span>
+              </div>
+            </div>
           </div>
         </div>
 

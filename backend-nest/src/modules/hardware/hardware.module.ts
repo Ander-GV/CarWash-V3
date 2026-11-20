@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ServicioArduino } from './arduino.service';
+import { ServicioHardware } from './hardware.service';
 import { ControladorHardware } from './hardware.controller';
 
 @Module({
   controllers: [ControladorHardware],
-  providers: [ServicioArduino],
-  exports: [ServicioArduino],
+  providers: [ServicioHardware],
+  exports: [ServicioHardware],
 })
 export class ModuloHardware {}
 

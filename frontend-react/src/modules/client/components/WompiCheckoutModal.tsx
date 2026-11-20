@@ -240,7 +240,7 @@ export const WompiCheckoutModal: React.FC<WompiModalProps> = ({
             >
               <CheckCircle2 size={20} />
               {isProcessing
-                ? 'Conectando con Arduino y autorizando...'
+                ? 'Conectando con controlador de bahía y autorizando...'
                 : 'Aprobar Pago Inmediato (Sandbox / Kiosco)'}
             </button>
 
@@ -269,7 +269,7 @@ export const WompiCheckoutModal: React.FC<WompiModalProps> = ({
             }}
           >
             Al confirmar el pago, la talanquera de acceso se levantará automáticamente mediante el
-            microcontrolador Arduino.
+            sistema de automatización de bahía.
           </div>
         </div>
       </div>

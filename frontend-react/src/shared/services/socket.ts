@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_WS_URL || 'http://localhost:3000/wash-stream';
+const SOCKET_URL = import.meta.env.VITE_WS_URL || '/wash-stream';
 
 let socket: Socket | null = null;
 

@@ -13,6 +13,7 @@ import { AdminLogin } from './modules/admin/pages/AdminLogin';
 import { AdminDashboard } from './modules/admin/pages/AdminDashboard';
 import { WashLogsView } from './modules/admin/pages/WashLogsView';
 import { PredictiveAnalyticsView } from './modules/admin/pages/PredictiveAnalyticsView';
+import { AdminManagementView } from './modules/admin/pages/AdminManagementView';
 
 export const App: React.FC = () => {
   return (
@@ -32,6 +33,7 @@ export const App: React.FC = () => {
               {/* Rutas Protegidas Módulo de Administración (ROLE_ADMIN / Backoffice) */}
               <Route element={<ProtectedRoute requiredRole="ROLE_ADMIN" redirectTo="/admin/login" />}>
                 <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/users" element={<AdminManagementView />} />
                 <Route path="/admin/logs" element={<WashLogsView />} />
                 <Route path="/admin/analytics" element={<PredictiveAnalyticsView />} />
               </Route>

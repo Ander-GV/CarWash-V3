@@ -33,6 +33,13 @@ export class ControladorAdminLavado {
     return this.servicioLavado.getWashLogs(parseInt(limit, 10), parseInt(page, 10));
   }
 
+  @HttpCode(HttpStatus.OK)
+  @Post('start-wash')
+  @Roles(Rol.ADMIN, Rol.OPERATOR)
+  async startWash() {
+    return this.servicioLavado.adminManualStartWash();
+  }
+
   @Post(':id/override-barrier')
   @Roles(Rol.ADMIN)
   async overrideBarrier(@Param('id') id: string) {
@@ -44,6 +51,20 @@ export class ControladorAdminLavado {
   @Roles(Rol.ADMIN)
   async emergencyStop() {
     return this.servicioLavado.adminEmergencyStop();
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('resume-system')
+  @Roles(Rol.ADMIN)
+  async resumeSystem() {
+    return this.servicioLavado.adminResumeSystem();
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('reset-emergency')
+  @Roles(Rol.ADMIN)
+  async resetEmergency() {
+    return this.servicioLavado.adminResumeSystem();
   }
 }
 

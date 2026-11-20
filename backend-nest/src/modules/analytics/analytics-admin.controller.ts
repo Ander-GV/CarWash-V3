@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ServicioAnalitica } from './analytics.service';
 import { GuardAutenticacionJwt } from '../../common/guards/jwt-auth.guard';
 import { GuardRoles } from '../../common/guards/roles.guard';
@@ -24,6 +24,11 @@ export class ControladorAdminAnalitica {
   @Get('overview')
   async getOverview() {
     return this.servicioAnalitica.getAnalyticsOverview();
+  }
+
+  @Post('retrain')
+  async retrain() {
+    return this.servicioAnalitica.retrainModel();
   }
 }
 

@@ -1,34 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
+  Car,
+  Droplets,
   Sparkles,
   LayoutDashboard,
   ClipboardList,
-  Cpu,
   TrendingUp,
   LogOut,
   LogIn,
   Layers,
+  Users,
+  Menu,
+  X,
+  ShieldCheck,
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
+  const navLinks = [
+    { to: '/', label: 'Kiosco Cliente', icon: Layers },
+    { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/admin/users', label: 'Admins', icon: Users },
+    { to: '/admin/logs', label: 'Registro Entradas', icon: ClipboardList },
+    { to: '/admin/analytics', label: 'IA Predictiva', icon: TrendingUp },
+  ];
+
   return (
-    <header
-      style={{
-        background: 'rgba(10, 15, 29, 0.85)',
-        backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid var(--border-glass)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-      }}
-    >
+    <header className="carwash-navbar">
       <div
         className="app-container"
         style={{
@@ -36,147 +41,271 @@ export const Navbar: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0.85rem 1.5rem',
+          position: 'relative',
+          zIndex: 2,
         }}
       >
-        {/* Brand Logo */}
+        {/* Brand Logo & Carwash Badge */}
         <Link
           to="/"
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0.75rem',
+            gap: '0.85rem',
             textDecoration: 'none',
             color: 'inherit',
           }}
         >
+          {/* Logo con aura de agua */}
           <div
             style={{
-              width: '46px',
-              height: '46px',
-              borderRadius: '12px',
+              position: 'relative',
+              width: '48px',
+              height: '48px',
+              borderRadius: '14px',
               overflow: 'hidden',
-              border: '2px solid var(--primary-cyan)',
-              boxShadow: '0 0 15px rgba(6, 182, 212, 0.5)',
+              border: '2.5px solid #ffffff',
+              boxShadow: '0 0 20px rgba(7, 14, 30, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3)',
+              background: '#070e1e',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: '#0f172a',
+              flexShrink: 0,
             }}
           >
             <img
               src="/carwash-branding.jpg"
               alt="CAR WASH"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={(e) => {
+                // Fallback si la imagen no carga
+                (e.target as HTMLElement).style.display = 'none';
+              }}
+            />
+            <Car
+              size={24}
+              color="#00f0ff"
+              style={{ position: 'absolute', zIndex: -1 }}
             />
           </div>
+
           <div>
             <div
               style={{
-                fontFamily: 'var(--font-heading)',
-                fontSize: '1.4rem',
-                fontWeight: 900,
-                letterSpacing: '0.02em',
-                background: 'linear-gradient(to right, #ffffff 0%, #38bdf8 50%, #60a5fa 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                textTransform: 'uppercase',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
               }}
             >
-              CAR WASH
+              <span
+                style={{
+                  fontFamily: 'var(--font-heading)',
+                  fontSize: '1.45rem',
+                  fontWeight: 900,
+                  letterSpacing: '0.04em',
+                  color: '#070e1e',
+                  textTransform: 'uppercase',
+                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.4)',
+                }}
+              >
+                CAR WASH
+              </span>
+              <span
+                style={{
+                  background: '#070e1e',
+                  color: '#00f0ff',
+                  fontSize: '0.68rem',
+                  fontWeight: 800,
+                  padding: '0.15rem 0.5rem',
+                  borderRadius: '6px',
+                  letterSpacing: '0.05em',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                }}
+              >
+                <Droplets size={10} color="#00f0ff" /> PRO
+              </span>
             </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <span className="pulse-dot"></span> Autolavado Inteligente • Arduino IoT
+
+            <div
+              style={{
+                fontSize: '0.74rem',
+                color: '#042f44',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                marginTop: '1px',
+              }}
+            >
+              <span className="pulse-dot"></span>
+              Túnel Inteligente • ESP32 IoT
             </div>
           </div>
         </Link>
 
-        {/* Navigation Tabs */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Link
-            to="/"
-            className="btn-secondary"
-            style={{
-              padding: '0.5rem 0.9rem',
-              fontSize: '0.875rem',
-              background: isActive('/') ? 'rgba(6, 182, 212, 0.15)' : undefined,
-              borderColor: isActive('/') ? 'var(--primary-cyan)' : undefined,
-              color: isActive('/') ? '#38bdf8' : undefined,
-            }}
-          >
-            <Layers size={16} /> Kiosco Cliente
-          </Link>
-
-          <Link
-            to="/admin"
-            className="btn-secondary"
-            style={{
-              padding: '0.5rem 0.9rem',
-              fontSize: '0.875rem',
-              background: isActive('/admin') ? 'rgba(59, 130, 246, 0.15)' : undefined,
-              borderColor: isActive('/admin') ? 'var(--primary-blue)' : undefined,
-              color: isActive('/admin') ? '#60a5fa' : undefined,
-            }}
-          >
-            <LayoutDashboard size={16} /> Dashboard Admin
-          </Link>
-
-          <Link
-            to="/admin/logs"
-            className="btn-secondary"
-            style={{
-              padding: '0.5rem 0.9rem',
-              fontSize: '0.875rem',
-              background: isActive('/admin/logs') ? 'rgba(139, 92, 246, 0.15)' : undefined,
-              borderColor: isActive('/admin/logs') ? 'var(--accent-purple)' : undefined,
-              color: isActive('/admin/logs') ? '#c084fc' : undefined,
-            }}
-          >
-            <ClipboardList size={16} /> Registro Entradas
-          </Link>
-
-          <Link
-            to="/admin/analytics"
-            className="btn-secondary"
-            style={{
-              padding: '0.5rem 0.9rem',
-              fontSize: '0.875rem',
-              background: isActive('/admin/analytics') ? 'rgba(16, 185, 129, 0.15)' : undefined,
-              borderColor: isActive('/admin/analytics') ? 'var(--accent-emerald)' : undefined,
-              color: isActive('/admin/analytics') ? '#34d399' : undefined,
-            }}
-          >
-            <TrendingUp size={16} /> IA Predictiva
-          </Link>
+        {/* Desktop Navigation Tabs (Contraste Oscuro contra el Aqua Brillante) */}
+        <nav
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.55rem',
+          }}
+          className="desktop-nav"
+        >
+          {navLinks.map((link) => {
+            const Icon = link.icon;
+            const active = isActive(link.to);
+            return (
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`nav-pill-carwash ${active ? 'active' : ''}`}
+              >
+                <Icon size={16} />
+                <span>{link.label}</span>
+              </Link>
+            );
+          })}
         </nav>
 
-        {/* Right Section: Auth Status */}
+        {/* Right Section: Auth Status & Mobile Toggle */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
           {isAuthenticated ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{user?.fullName}</div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--primary-cyan)' }}>{user?.role}</div>
+              <div
+                style={{
+                  textAlign: 'right',
+                  background: 'rgba(7, 14, 30, 0.75)',
+                  padding: '0.35rem 0.85rem',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  backdropFilter: 'blur(8px)',
+                }}
+                className="user-profile-badge"
+              >
+                <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#ffffff' }}>
+                  {user?.fullName}
+                </div>
+                <div
+                  style={{
+                    fontSize: '0.68rem',
+                    color: '#38bdf8',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    gap: '0.25rem',
+                  }}
+                >
+                  <ShieldCheck size={11} /> {user?.role}
+                </div>
               </div>
+
               <button
                 onClick={logout}
-                className="btn-secondary"
-                style={{ padding: '0.5rem 0.75rem', color: 'var(--accent-rose)' }}
+                className="nav-pill-carwash"
+                style={{
+                  padding: '0.5rem 0.85rem',
+                  color: '#fb7185',
+                  borderColor: 'rgba(244, 63, 94, 0.4)',
+                }}
                 title="Cerrar Sesión"
               >
-                <LogOut size={16} /> Salir
+                <LogOut size={16} />
+                <span className="btn-label-text">Salir</span>
               </button>
             </div>
           ) : (
             <Link
               to="/admin/login"
-              className="btn-primary"
-              style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+              className="nav-pill-carwash"
+              style={{
+                background: '#070e1e',
+                color: '#00f0ff',
+                borderColor: '#00f0ff',
+                boxShadow: '0 0 14px rgba(0, 240, 255, 0.4)',
+              }}
             >
-              <LogIn size={16} /> Acceso Admin
+              <LogIn size={16} />
+              <span>Acceso Admin</span>
             </Link>
           )}
+
+          {/* Botón de Menú Móvil */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="mobile-menu-btn"
+            style={{
+              background: '#070e1e',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: '#ffffff',
+              padding: '0.5rem',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              display: 'none',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            aria-label="Abrir Menú"
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
       </div>
+
+      {/* Menú Desplegable Móvil */}
+      {mobileMenuOpen && (
+        <div
+          style={{
+            background: 'rgba(7, 14, 30, 0.98)',
+            borderTop: '1px solid rgba(56, 189, 248, 0.3)',
+            padding: '1rem 1.5rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.65rem',
+            backdropFilter: 'blur(16px)',
+          }}
+          className="mobile-nav-drawer"
+        >
+          {navLinks.map((link) => {
+            const Icon = link.icon;
+            const active = isActive(link.to);
+            return (
+              <Link
+                key={link.to}
+                to={link.to}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`nav-pill-carwash ${active ? 'active' : ''}`}
+                style={{ width: '100%', justifyContent: 'flex-start' }}
+              >
+                <Icon size={18} />
+                <span>{link.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Reglas Responsive en bloque style integrado */}
+      <style>{`
+        @media (max-width: 960px) {
+          .desktop-nav {
+            display: none !important;
+          }
+          .mobile-menu-btn {
+            display: flex !important;
+          }
+          .user-profile-badge {
+            display: none !important;
+          }
+          .btn-label-text {
+            display: none;
+          }
+        }
+      `}</style>
     </header>
   );
 };

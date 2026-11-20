@@ -61,7 +61,7 @@ export class ControladorPagos {
       try {
         const session = await this.servicioLavado.getSessionByReference(reference);
         await this.servicioLavado.handlePaymentApproved(session.id, transactionId);
-        this.logger.log(` Transacción ${transactionId} APROBADA para referencia ${reference}. Arduino notificado.`);
+        this.logger.log(` Transacción ${transactionId} APROBADA para referencia ${reference}. Hardware de Bahía notificado.`);
       } catch (err: any) {
         this.logger.error(`Error procesando sesión tras pago Wompi: ${err.message}`);
       }
@@ -76,7 +76,7 @@ export class ControladorPagos {
     const updated = await this.servicioLavado.handlePaymentApproved(sessionId, mockTransactionId);
     return {
       success: true,
-      message: 'Pago simulado aprobado exitosamente. Señal enviada a Arduino para abrir talanquera.',
+      message: 'Pago simulado aprobado exitosamente. Señal enviada a Hardware para abrir talanquera.',
       session: updated,
     };
   }
